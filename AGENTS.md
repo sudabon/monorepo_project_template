@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 このファイルはClaude Codeがリポジトリを操作する際のガイドラインである。
 詳細なルールは `.claude/rules/` に分割して配置している。
@@ -15,36 +15,42 @@
 ```
 ├── backend/                   # バックエンド
 │   ├── src/
-│   |   ├── app/               # Application層（ユースケース・DTO・リポジトリIF）
-│   |   │   ├── common/        # 共通で利用する結果クラスやエラークラス
-│   |   │   ├── dto/           # Data Transfer Object（層間のデータ受け渡し）
-│   |   │   ├── repository/    # リポジトリインターフェース（抽象クラス）
-│   |   │   ├── port/          # ユースケースで利用する外部サービスの機能インターフェース
-│   |   │   └── usecase/       # ユースケース（ビジネスロジックの実行フロー）
-│   |   ├── domain/            # Domain層（最内層・外部依存なし）
-│   |   │   ├── entity/        # エンティティ（ドメインモデル）
-│   |   │   └── service/       # ドメインサービス（エンティティ横断ロジック）
-│   |   ├── infra/             # Infrastructure層（外部サービス・技術的実装）
-│   |   │   ├── cli/           # CLIコマンド
-│   |   │   ├── configuration/ # 設定（環境変数・アプリ設定）
-│   |   │   ├── notification/  # 通知（メール・Slack等）
-│   |   │   ├── logging/       # ロギング
-│   |   │   ├── persistence/   # データ永続化（RDBMS・NoSQL・Memory）
-│   |   │   └── web/           # Web関連（FW・Middleware）
-│   |   └── interface/         # Interface層（入出力の境界）
-│   |       ├── controller/    # コントローラ（リクエスト処理）
-│   |       ├── router/        # FastAPIルーター定義
-│   |       └── viewmodel/     # レスポンス整形用ViewModel
-|   └── tests                  # 単体テスト
-├── frontend/                  # フロントエンド
+│   │   ├── main.py            # サーバプロセス管理
+│   |   ├── app/              # Application層
+│   |   │   ├── common/       # 共通で利用する結果クラスやエラークラスなど
+│   |   │   ├── dto/          # Data Transfer Object（層間のデータ受け渡し）
+│   |   │   ├── repository/   # データ永続化のためインタフェース定義（抽象クラス）
+│   |   │   ├── port/         # 外部サービス機能のインターフェース定義（抽象クラス）
+│   |   │   └── usecase/      # ビジネスロジックの実行フロー
+│   |   ├── domain/           # Domain層
+│   |   │   ├── entity/       # エンティティ（ドメインモデル）
+│   |   │   └── service/      # ドメインサービス（エンティティ横断ロジック）
+│   |   ├── infra/            # Infrastructure層
+│   |   │   ├── cli/          # CLIコマンド
+│   |   │   ├── config/       # 設定（環境変数・アプリ設定）
+│   |   │   ├── notification/ # 通知（メール・Slack等）
+│   |   │   ├── logging/      # ロギング
+│   |   │   ├── persistence/  # データ永続化（RDBMS・NoSQL・Memory）
+│   |   │   └── web/          # Web関連（FastAPIルーター定義・Middleware）
+│   |   └── interface/        # Interface層
+│   |       ├── controller/   # 入力リクエスト処理
+│   |       ├── presender/    # 出力変換（domain固有の型をviewmodel固有の型へ変換）
+│   |       └── viewmodel/    # レスポンス整形用ViewModel
+|   └── tests                 # 単体テスト
+│       ├── arch/             # クリーンアーキテクチャのテスト
+│       ├── app/              # Application層の単体テスト
+│       ├── domain/           # Domain層の単体テスト
+│       ├── infra/            # Infrastructure層の単体テスト
+│       └── interface/        # Interface層の単体テスト
+├── frontend/                 # フロントエンド
 │   ├── src/
-│   │   ├── components/        # UIコンポーネント（Shadcn/ui ベース）
-│   │   ├── pages/             # ページコンポーネント
-│   │   ├── hooks/             # カスタムフック
-│   │   ├── lib/               # ユーティリティ・API クライアント
-│   │   ├── types/             # 型定義
-│   │   └── routes/            # React Router ルート定義
-│   ├── e2e/                   # Playwright E2Eテスト
+│   │   ├── components/       # UIコンポーネント（Shadcn/ui ベース）
+│   │   ├── pages/            # ページコンポーネント
+│   │   ├── hooks/            # カスタムフック
+│   │   ├── lib/              # ユーティリティ・API クライアント
+│   │   ├── types/            # 型定義
+│   │   └── routes/           # React Router ルート定義
+│   ├── e2e/                  # Playwright E2Eテスト
 │   ├── package.json
 │   └── vite.config.ts
 ```

@@ -1,5 +1,13 @@
+# MacOS
 **/.DS_store
+**/Thumbs.db
+
+# IDE
 .specstory/
+.smart-edit/
+.vscode/
+
+# Cursor
 .cursorrules
 .cursorignore
 .cursorindexingignore

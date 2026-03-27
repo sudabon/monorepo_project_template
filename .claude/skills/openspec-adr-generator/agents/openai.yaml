@@ -1,0 +1,3 @@
+interface:
+  display_name: "OpenSpec ADR Generator"
+  short_description: "Generate ADR files from OpenSpec proposal.md and design.md"

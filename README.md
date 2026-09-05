@@ -1,0 +1,2 @@
+# monorepo_project_template
+BtoB向けSaaSアプリケーションテンプレート

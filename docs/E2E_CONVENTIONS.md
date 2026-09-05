@@ -3,7 +3,8 @@
 Playwright の E2E テストを追加・修正・レビュー・失敗調査するときの共通規約。
 `tests/e2e/` 配下を触る作業はすべてこの文書に従う。
 
-エージェント向けの短い入口は `.claude/skills/e2e-conventions/SKILL.md` がこの文書を参照する。
+この文書が規約の唯一の出典。Coding Agent 向けの入口（Claude Code の skill など）を置く場合は、
+規約を複製せずこの文書を参照させること。エージェント設定はリポジトリに含めない。
 
 ## ロケーター
 - getByRole / getByLabel / getByText を最優先。次点 getByTestId

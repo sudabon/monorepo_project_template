@@ -19,6 +19,10 @@ E2E 計画ガードだけを他の検証の成功とみなしてはならない�
 `test-plan.yml` の checkout は `fetch-depth: 0` を指定する。PR の merge commit とベースの共通祖先、
 `origin/main` を取得し、`git diff origin/main...HEAD` をローカルと同じ意味で実行する。
 
+全ワークフローに `concurrency` を設定し、Pull Request では先行実行を打ち切る。
+main への push は打ち切らない。main の各コミットに対する検証結果を残すため。
+Web ジョブは `pnpm/action-setup` を `setup-node` より前に置き、`cache: pnpm` で pnpm ストアを再利用する。
+
 ## 根拠とトレードオフ
 
 独立したワークフロー間で結果を集約するには待機・API 問い合わせなどの追加実装が必要になる。

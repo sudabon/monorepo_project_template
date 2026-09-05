@@ -9,6 +9,9 @@ BASE ?= origin/main
 GENERATED_PATHS :=
 # renovate: datasource=npm depName=renovate
 RENOVATE_VERSION := 44.65.2
+# Renovate 44.x runs on Node.js 24.x, not the repository-pinned Node.js.
+# Keep in sync with node-version in .github/workflows/renovate.yml.
+RENOVATE_NODE_MAJOR := 24
 
 .PHONY: setup setup-go setup-web gen gen-check fmt fmt-go fmt-web fmt-check \
 	fmt-check-go fmt-check-web lint lint-go lint-web test test-go test-web \
@@ -94,5 +97,11 @@ check:
 check-test-plan:
 	bash scripts/check-test-plan.sh "$(BASE)"
 
+# CI-only: the dedicated renovate workflow provides Node.js $(RENOVATE_NODE_MAJOR).x.
 validate-renovate:
+	@major=$$($(NODE) -p 'process.versions.node.split(".")[0]'); \
+		test "$$major" = '$(RENOVATE_NODE_MAJOR)' || { \
+			echo "validate-renovate needs Node.js $(RENOVATE_NODE_MAJOR).x for renovate@$(RENOVATE_VERSION) (running $$major.x)." >&2; \
+			echo "Run it through the 'Validate renovate.json' workflow, or switch Node.js locally." >&2; \
+			exit 1; }
 	npx --yes -p renovate@$(RENOVATE_VERSION) renovate-config-validator

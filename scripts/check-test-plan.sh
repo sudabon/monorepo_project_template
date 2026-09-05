@@ -16,6 +16,10 @@ fi
 
 # test-plan.md を持つ change にタグ付きテストを要求する。
 base="${1:-origin/main}"
+if ! git rev-parse --verify --quiet "$base^{commit}" >/dev/null; then
+  echo "::error::差分の基準 '$base' を解決できません。'git fetch origin' で取得するか BASE=<ref> を指定してください" >&2
+  exit 1
+fi
 ids=$(git diff --name-only "$base"...HEAD -- 'openspec/changes/**' \
   | awk -F/ '$3 != "archive" && NF >= 4 { print $3 }' | sort -u)
 [ -z "$ids" ] && { echo "openspec change の差分なし。skip"; exit 0; }

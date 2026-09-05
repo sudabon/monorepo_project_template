@@ -151,7 +151,10 @@ test('invalid JSON fails instead of disabling the guard', (t) => {
 
 test('an unresolved diff base fails instead of skipping the guard', (t) => {
   const repo = fixture(t, {});
-  assert.notEqual(repo.run('missing-base').status, 0);
+  const result = repo.run('missing-base');
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /missing-base/);
+  assert.match(result.stderr, /git fetch origin/);
 });
 
 test('fetching full history restores the PR base and the intended three-dot diff', (t) => {

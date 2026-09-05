@@ -7,6 +7,7 @@
 
 Go、Web、Contract のワークフローは `on.push.paths` / `on.pull_request.paths` で分離する。
 共通 Makefile・設定を変更した場合は関係するワークフローを実行する。
+Renovate 設定は専用 `renovate.yml` が Node.js 24.x で `make validate-renovate` を実行する。
 E2E 計画ガードは専用 `test-plan.yml` で全 PR に対して実行し、差分がない場合はスクリプト内で成功としてスキップする。
 
 確認時点のリポジトリには ruleset・main のブランチ保護・required status check がないため、集約ジョブは追加しない。

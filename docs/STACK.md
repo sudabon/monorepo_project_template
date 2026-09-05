@@ -13,6 +13,7 @@
 
 Biome は ESLint + Prettier より依存と設定を少なくできるため採用した。アプリケーション依存は Phase 0 では追加しない。
 Playwright の既存設定・レポートスクリプトは後続フェーズで利用し、ブラウザテストや Playwright のインストールはここでは行わない。
+E2E の実装規約は [E2E_CONVENTIONS.md](E2E_CONVENTIONS.md) に置く。
 
 ## ローカルと CI
 
@@ -22,10 +23,10 @@ Go は Make が `go.work` から `GOTOOLCHAIN` を設定するため、インス
 CI の Node.js は `.node-version`、Go は `apps/api/go.mod`、pnpm は `package.json` から取得する。
 `make lint-web` は Node.js と pnpm の固定値・実行バージョン・依存宣言を検証し、`make lint-go` は全 Go module と workspace の固定値を検証する。
 
-`make check` は fmt チェック → lint → gen 差分 → test → build の順に直列実行する。
+`make check` は fmt チェック → lint → gen 差分 → test → build → E2E 計画ガードの順に直列実行する。
 Go と TypeScript のソースがまだない workspace は成功としてスキップし、追加後は同じ入口で処理する。
 `make gen` は Phase 1 で生成処理を追加するための空ターゲット。
-`make gen-check` の差分検出範囲は `api/`、`apps/`、`packages/` とし、未追跡の生成ファイルも検出する。
+`make gen-check` の差分検出範囲は `GENERATED_PATHS` に列挙した生成物に限定する。Phase 0 では未設定のため成功としてスキップし、未コミットの手書きコードでは失敗しない。
 
 `make check-test-plan` は PR の E2E 計画ガード。既定の比較先は `origin/main`、別ブランチは `make check-test-plan BASE=origin/<branch>` で指定する。
 テンプレートでは `.openspec-e2e-kit.json` の `templateRepo: true` によりスキップし、案件作成時にこのフラグを削除する。
@@ -38,5 +39,6 @@ Renovate は Go modules / npm / GitHub Actions の patch・minor を毎週月曜
 major は個別 PR とし自動マージしない。lockfile maintenance も週次で行う。
 バージョン固定の整合性チェックが失敗した更新 PR は、`.node-version` / `engines.node`、または `go.work` / 各 `go.mod` を同時に更新する。
 
-Renovate 設定検証は `make validate-renovate`（Renovate 44.65.2 が対応する Node.js 24.11.0 以上の 24.x 環境で実行）を利用する。
+Renovate 設定の破損は CI の `renovate.yml` が Node.js 24.x で `make validate-renovate` を実行して検出する。
+Renovate 44.65.2 は Node.js 24.x 向けのため、リポジトリ固定の Node.js 26 では実行しない。
 通常の `make setup` に Renovate 本体は追加しない。CI の required check の判断は [ADR 0001](adr/0001-ci-path-filters.md) を参照。

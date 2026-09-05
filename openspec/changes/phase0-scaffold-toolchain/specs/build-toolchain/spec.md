@@ -46,7 +46,7 @@ CI は変更されたパスに応じて、実行する必要のないジョブ�
 
 ### Requirement: ツールチェーンバージョンの固定
 
-Node.js のバージョンは `.node-version` と `package.json` の `engines.node` で完全一致で固定し、両者が一致していなければならない (MUST)。pnpm のバージョンは `packageManager` の `pnpm@<version>` で完全一致で固定しなければならない (MUST)。Go のバージョンは `go.mod` と CI の設定で一致していなければならない (MUST)。依存パッケージのバージョンは完全一致でピンし、`^` や `~` を使ってはならない (MUST NOT)。lockfile はリポジトリにコミットしなければならない (MUST)。
+Node.js のバージョンは `.node-version` と `package.json` の `engines.node` で完全一致で固定し、両者が一致していなければならない (MUST)。pnpm のバージョンは `packageManager` の `pnpm@<version>` で完全一致で固定しなければならない (MUST)。Go のバージョンは `go.mod` と CI の設定で一致していなければならない (MUST)。依存パッケージのバージョンは完全一致でピンし、`^` や `~` を使ってはならない (MUST NOT)。pnpm の `workspace:` プロトコルによるワークスペース内部参照は、このピン検査の対象外とする。lockfile はリポジトリにコミットしなければならない (MUST)。
 
 #### Scenario: Node バージョンの一致
 
@@ -66,7 +66,7 @@ Node.js のバージョンは `.node-version` と `package.json` の `engines.no
 #### Scenario: バージョンレンジ指定の排除
 
 - **WHEN** `package.json` の依存宣言を確認する
-- **THEN** すべての依存が完全一致のバージョンで指定されており、レンジ指定子を含まない
+- **THEN** レジストリ依存が完全一致のバージョンで指定されており、レンジ指定子を含まない。`workspace:` で始まる内部参照は許容される
 
 ### Requirement: 依存更新の取り込み方針
 

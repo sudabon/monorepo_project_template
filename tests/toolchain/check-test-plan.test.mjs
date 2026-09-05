@@ -4,9 +4,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
-const script = new URL('../../scripts/check-test-plan.sh', import.meta.url)
-  .pathname;
+const script = fileURLToPath(
+  new URL('../../scripts/check-test-plan.sh', import.meta.url),
+);
 
 function fixture(t, config) {
   const cwd = mkdtempSync(join(tmpdir(), 'test-plan-'));
@@ -97,6 +99,19 @@ test('a planned change with a tagged test passes', (t) => {
   repo.commit();
   const result = repo.run();
   assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('a shorter change id does not match a longer tag', (t) => {
+  const repo = fixture(t, {});
+  repo.write('openspec/changes/phase1/test-plan.md', 'TP-001\n');
+  repo.write(
+    'tests/e2e/example.spec.ts',
+    "test('example @phase10', () => {});\n",
+  );
+  repo.commit();
+  const result = repo.run();
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stdout, /@phase1/);
 });
 
 test('a change without a plan does not mask another change with missing tests', (t) => {

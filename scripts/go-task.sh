@@ -3,7 +3,16 @@ set -euo pipefail
 
 task="${1:?usage: go-task.sh <setup|fmt|fmt-check|lint|test|build>}"
 expected=$(awk '$1 == "go" { print $2 }' go.work)
-export GOTOOLCHAIN="go$expected"
+toolchain=$expected
+case $expected in
+  [0-9]*.[0-9]*.[0-9]*) ;;
+  [0-9]*.[0-9]*) toolchain=$expected.0 ;;
+  *)
+    echo "go.work: go ${expected:-<missing>} must be X.Y or X.Y.Z" >&2
+    exit 1
+    ;;
+esac
+export GOTOOLCHAIN="go$toolchain"
 gofmt_bin="$(go env GOROOT)/bin/gofmt"
 
 modules=$(go list -m -f '{{if .Main}}{{.Dir}}{{end}}')

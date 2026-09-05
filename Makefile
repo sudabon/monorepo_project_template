@@ -5,6 +5,8 @@ SHELL := /bin/bash
 NODE ?= node
 PNPM ?= pnpm
 BASE ?= origin/main
+# Phase 1 sets the generated output paths here.
+GENERATED_PATHS :=
 # renovate: datasource=npm depName=renovate
 RENOVATE_VERSION := 44.65.2
 
@@ -18,8 +20,7 @@ setup-go:
 	bash scripts/go-task.sh setup
 
 setup-web:
-	$(NODE) scripts/check-toolchain.mjs
-	@test "$$($(PNPM) --version)" = "$$($(NODE) -p "require('./package.json').packageManager.split('@')[1]")"
+	PNPM='$(PNPM)' $(NODE) scripts/check-toolchain.mjs
 	$(PNPM) install --frozen-lockfile
 
 # Phase 1 adds the OpenAPI generators here.
@@ -28,9 +29,13 @@ gen:
 
 gen-check:
 	$(MAKE) gen
-	git diff --exit-code -- api/ apps/ packages/
-	@test -z "$$(git ls-files --others --exclude-standard -- api/ apps/ packages/)" || \
-		{ echo 'Untracked files in generation directories; add the intended files to Git'; exit 1; }
+ifeq ($(strip $(GENERATED_PATHS)),)
+	@echo 'No generated paths yet; skip'
+else
+	git diff --exit-code HEAD -- $(GENERATED_PATHS)
+	@test -z "$$(git ls-files --others --exclude-standard -- $(GENERATED_PATHS))" || \
+		{ echo 'Untracked generated files; add the intended files to Git'; exit 1; }
+endif
 
 fmt: fmt-go fmt-web
 
@@ -54,8 +59,7 @@ lint-go:
 	bash scripts/go-task.sh lint
 
 lint-web:
-	$(NODE) scripts/check-toolchain.mjs
-	@test "$$($(PNPM) --version)" = "$$($(NODE) -p "require('./package.json').packageManager.split('@')[1]")"
+	PNPM='$(PNPM)' $(NODE) scripts/check-toolchain.mjs
 	$(PNPM) run lint
 
 test: test-go test-web
@@ -77,16 +81,18 @@ build-go:
 build-web:
 	$(PNPM) run build
 
-# Keep this order identical to the language workflows, even with make -j.
+# Keep language checks identical to the language workflows, even with make -j.
+# check-test-plan matches the dedicated E2E plan workflow.
 check:
 	$(MAKE) fmt-check
 	$(MAKE) lint
 	$(MAKE) gen-check
 	$(MAKE) test
 	$(MAKE) build
+	$(MAKE) check-test-plan
 
 check-test-plan:
 	bash scripts/check-test-plan.sh "$(BASE)"
 
 validate-renovate:
-	$(PNPM) --package=renovate@$(RENOVATE_VERSION) dlx renovate-config-validator --strict renovate.json
+	npx --yes renovate@$(RENOVATE_VERSION) renovate-config-validator --strict renovate.json

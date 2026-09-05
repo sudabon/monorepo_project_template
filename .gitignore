@@ -43,7 +43,7 @@ bin/
 # Editor/IDE
 .vscode/
 .specstory/
-.senera
+.serena/
 .uv-cache/
 
 # CodingAgent

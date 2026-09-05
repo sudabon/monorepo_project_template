@@ -4,11 +4,12 @@
     "includes": [
       "apps/**",
       "packages/**",
-      "scripts/check-toolchain.mjs",
-      "tests/toolchain/**",
-      "package.json",
-      "biome.json",
-      "renovate.json",
+      "scripts/**",
+      "tests/**",
+      "*.json",
+      "*.ts",
+      "*.mjs",
+      "*.js",
       ".openspec-e2e-kit.json"
     ]
   },

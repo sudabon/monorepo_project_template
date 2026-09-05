@@ -26,7 +26,8 @@ for id in $ids; do
   if [ ! -f "$plan" ]; then
     echo "$id: test-plan.md なし（E2E 不要）。skip"; continue
   fi
-  if [ ! -d tests/e2e/ ] || ! grep -rq -- "@$id" tests/e2e/; then
+  escaped=$(printf '%s' "$id" | sed 's/[^A-Za-z0-9]/\\&/g')
+  if [ ! -d tests/e2e/ ] || ! grep -rqE -- "@${escaped}([^A-Za-z0-9_-]|$)" tests/e2e/; then
     echo "::error::@$id タグ付きの E2E テストが tests/e2e/ にありません"; fail=1
   fi
 done

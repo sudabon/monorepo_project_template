@@ -1,0 +1,43 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": [
+    "gomod",
+    "npm",
+    "github-actions",
+    "nodenv",
+    "custom.regex"
+  ],
+  "timezone": "Asia/Tokyo",
+  "rangeStrategy": "pin",
+  "platformAutomerge": false,
+  "automerge": false,
+  "packageRules": [
+    {
+      "description": "Group patch/minor updates weekly; Renovate waits for all checks",
+      "matchUpdateTypes": ["patch", "minor", "pin", "digest"],
+      "groupName": "weekly non-major dependencies",
+      "schedule": ["* 0-5 * * 1"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "groupName": null,
+      "automerge": false
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-5 * * 1"]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+RENOVATE_VERSION := (?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "semver"
+    }
+  ]
+}

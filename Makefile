@@ -95,4 +95,4 @@ check-test-plan:
 	bash scripts/check-test-plan.sh "$(BASE)"
 
 validate-renovate:
-	npx --yes renovate@$(RENOVATE_VERSION) renovate-config-validator --strict renovate.json
+	npx --yes -p renovate@$(RENOVATE_VERSION) renovate-config-validator

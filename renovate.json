@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "enabledManagers": [
     "gomod",
     "npm",
@@ -17,52 +15,35 @@
   "packageRules": [
     {
       "description": "Group patch/minor updates weekly; Renovate waits for all checks",
-      "matchUpdateTypes": [
-        "patch",
-        "minor",
-        "pin",
-        "digest"
-      ],
+      "matchUpdateTypes": ["patch", "minor", "pin", "digest"],
       "groupName": "weekly non-major dependencies",
-      "schedule": [
-        "* 0-5 * * 1"
-      ],
+      "schedule": ["* 0-5 * * 1"],
       "automerge": true
     },
     {
-      "matchUpdateTypes": [
-        "major"
-      ],
+      "matchUpdateTypes": ["major"],
       "groupName": null,
       "automerge": false
     },
     {
       "description": "Keep go.work and every go.mod in one PR; go-task.sh requires them to match",
-      "matchDepNames": [
-        "go"
-      ],
+      "matchDepNames": ["go"],
       "groupName": "go toolchain"
     },
     {
       "description": "Keep .node-version and engines.node in one PR; check-toolchain.mjs requires them to match",
-      "matchDepNames": [
-        "node"
-      ],
+      "matchDepNames": ["node"],
       "groupName": "node runtime"
     }
   ],
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": [
-      "* 0-5 * * 1"
-    ]
+    "schedule": ["* 0-5 * * 1"]
   },
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^Makefile$/"
-      ],
+      "managerFilePatterns": ["/^Makefile$/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+RENOVATE_VERSION := (?<currentValue>\\S+)"
       ],
@@ -71,18 +52,12 @@
     {
       "customType": "regex",
       "description": "The gomod manager does not update the go directive in go.work",
-      "managerFilePatterns": [
-        "/^go\\.work$/"
-      ],
-      "matchStrings": [
-        "^go (?<currentValue>\\S+)"
-      ],
+      "managerFilePatterns": ["/^go\\.work$/"],
+      "matchStrings": ["^go (?<currentValue>\\S+)"],
       "depNameTemplate": "go",
       "datasourceTemplate": "golang-version",
       "versioningTemplate": "npm"
     }
   ],
-  "automergeSchedule": [
-    "at any time"
-  ]
+  "automergeSchedule": ["at any time"]
 }

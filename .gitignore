@@ -20,13 +20,38 @@ profile.cov
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# Go workspace file
-go.work
-go.work.sum
+# Commit go.work, go.work.sum, lockfiles, and generated source code.
+
+# JavaScript dependencies and build/test output
+node_modules/
+.pnpm-store/
+dist/
+coverage/
+test-results/
+playwright-report/
+
+# Local build output
+bin/
 
 # env file
-.env
+.env*
+!.env.example
+
+# MacOS
+**/.DS_Store
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.vscode/
+.specstory/
+.serena/
+.uv-cache/
+
+# CodingAgent
+.cursor/
+.claude/
+.codex/
+
+# Cursor
+.cursorrules
+.cursorignore
+.cursorindexingignore

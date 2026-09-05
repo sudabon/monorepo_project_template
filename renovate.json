@@ -1,0 +1,63 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": [
+    "gomod",
+    "npm",
+    "github-actions",
+    "nodenv",
+    "custom.regex"
+  ],
+  "timezone": "Asia/Tokyo",
+  "rangeStrategy": "pin",
+  "platformAutomerge": false,
+  "automerge": false,
+  "packageRules": [
+    {
+      "description": "Group patch/minor updates weekly; Renovate waits for all checks",
+      "matchUpdateTypes": ["patch", "minor", "pin", "digest"],
+      "groupName": "weekly non-major dependencies",
+      "schedule": ["* 0-5 * * 1"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "groupName": null,
+      "automerge": false
+    },
+    {
+      "description": "Keep go.work and every go.mod in one PR; go-task.sh requires them to match",
+      "matchDepNames": ["go"],
+      "groupName": "go toolchain"
+    },
+    {
+      "description": "Keep .node-version and engines.node in one PR; check-toolchain.mjs requires them to match",
+      "matchDepNames": ["node"],
+      "groupName": "node runtime"
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-5 * * 1"]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+RENOVATE_VERSION := (?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "The gomod manager does not update the go directive in go.work",
+      "managerFilePatterns": ["/^go\\.work$/"],
+      "matchStrings": ["^go (?<currentValue>\\S+)"],
+      "depNameTemplate": "go",
+      "datasourceTemplate": "golang-version",
+      "versioningTemplate": "npm"
+    }
+  ],
+  "automergeSchedule": ["at any time"]
+}

@@ -1,0 +1,6 @@
+{
+  "version": "0.1.0",
+  "installedAt": "2026-09-05T06:23:17.754Z",
+  "e2eRoot": "tests/e2e",
+  "templateRepo": true
+}

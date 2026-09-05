@@ -1,0 +1,44 @@
+name: Go
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'apps/bff/**'
+      - 'go.work*'
+      - 'scripts/go-task.sh'
+      - 'Makefile'
+      - '.github/workflows/go.yml'
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'apps/bff/**'
+      - 'go.work*'
+      - 'scripts/go-task.sh'
+      - 'Makefile'
+      - '.github/workflows/go.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    name: Go checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: apps/api/go.mod
+          cache: false
+      - run: make setup-go
+      - run: make fmt-check-go
+      - run: make lint-go
+      - run: make gen-check
+      - run: make test-go
+      - run: make build-go

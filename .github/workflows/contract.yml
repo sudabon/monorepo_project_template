@@ -1,0 +1,30 @@
+name: Contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'Makefile'
+      - '.github/workflows/contract.yml'
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'Makefile'
+      - '.github/workflows/contract.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Contract checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Phase 1 adds contract lint and generator dependencies to the Make targets.
+      - run: make gen-check

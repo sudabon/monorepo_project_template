@@ -23,8 +23,8 @@
 - [x] 4.1 `packages/api-client` のパッケージ構成(`package.json` / `tsconfig.json`、生成物ディレクトリと手書きディレクトリの分離)を作成し、pnpm workspace から解決できることを確認する
 - [x] 4.2 `openapi-typescript` で型定義を生成し、`tsc --noEmit` が通ることを確認する
 - [x] 4.3 `openapi-fetch` を用いた型付きクライアントを構成し、パスとメソッドの誤りが型エラーになることを型テストで確認する
-- [ ] 4.4 TanStack Query の `queryOptions` を返す手書きラッパをサンプルリソースの各操作に対して実装し、パラメータとレスポンスが生成型で型付けされることを型テストで確認する
-- [ ] 4.5 ラッパにリトライ方針やエラーハンドリングを持ち込んでいないことをレビューで確認する(それらは Phase 4 の QueryClient の責務)
+- [x] 4.4 TanStack Query の取得系 `queryOptions` と作成・更新・削除の `mutationOptions` を返す手書きラッパを実装し、パラメータとレスポンスが生成型で型付けされることを型テストで確認する
+- [x] 4.5 ラッパにリトライ方針やエラーハンドリングを持ち込んでいないことをレビューで確認する(それらは Phase 4 の QueryClient の責務)
 - [x] 4.6 `biome.json` の `files.includes` から TypeScript 生成物のパスを除外し、生成物が未整形でも `make fmt-check-web` が通ること、および `make fmt` 実行後に `make gen-check` が差分なしで通ることを確認する(整形と生成の冪等性が衝突しないこと)
 
 ## 5. 生成パイプラインと CI

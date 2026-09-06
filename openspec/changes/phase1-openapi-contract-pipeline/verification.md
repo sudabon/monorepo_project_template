@@ -5,7 +5,7 @@
 ## ローカル
 
 - `make check`: 成功。Go vet / test / build、Biome、Spectral、TypeScript 型検証、
-  既存 toolchain テスト 22 件、クライアント通信テスト 3 件、生成差分検査を実行した。
+  既存 toolchain テスト 22 件、クライアント通信テスト 7 件、生成差分検査を実行した。
   BFF はソース未追加のため Go 処理をスキップ。E2E 計画ガードは既存の
   `templateRepo: true` に従ってスキップする。
 - `make gen` を 2 回実行し、各回 `git diff --exit-code` が成功。
@@ -21,6 +21,11 @@
   省略した POST / PUT の正常入力も型テストに含めた。
 - 取得のページ引数のシリアライズ、HTTP エラーの status / body の保持、Query の
   キャンセルが fetch に伝播することをテストした。
+- 作成・更新・削除の入力と戻り値を生成型で検証し、不正な body / id と誤った戻り値の
+  型をコンパイルで検出する。通信テストで POST / PUT / DELETE のパスと本文、
+  mutation 実行前に通信しないこと、204 の本文なし応答、422 の全フィールドエラーの
+  保持を確認した。
+- `openspec validate phase1-openapi-contract-pipeline --strict`: 成功。
 
 ローカルでは既存の pnpm ランチャーの固定版切り替えが停止したため、npm 配布の
 同じ pnpm 11.25.0 を使用した。一時 PATH の `/tmp/phase1-toolchain/bin` にランチャーを
@@ -39,10 +44,13 @@
   Contract / Go / Web / Renovate / E2E plan がすべて成功。
   [成功実行](https://github.com/sudabon/monorepo_project_template/actions/runs/34000722278)
 
-検証 PR はマージせずに close する。比較用コミットと CI 実行履歴は PR に残す。
+検証 PR はマージせずに close 済み。比較用コミットと CI 実行履歴は PR に残している。
 
-## 未完了
+## 最終レビュー
 
-タスク 4.4 の全操作 `queryOptions` 指定について、取得系を `queryOptions`、
-作成・更新・削除を `mutationOptions` に変更する設計確認を依頼中。
-回答後に更新系ラッパと型・通信テストを実装し、タスク 4.5 の責務分離を最終確認する。
+取得系 `queryOptions`、更新系 `mutationOptions` への変更はユーザー承認済み。
+既存の `createItemQueries` のシグネチャと挙動を保ち、`createItemMutations` を追加した。
+主担当が差分をレビューし、ラッパは key・通信関数・型の受け渡しに限定され、
+リトライ、認証遷移、表示、キャッシュ無効化の方針を持たないことを確認した。
+HTTP エラーは status / body を保持する既存の通信アダプタに通して呼び出し側へ伝える。
+全 25 タスクを完了した。実サーバとの E2E は計画どおり Phase 2 / 5 の検証範囲とする。

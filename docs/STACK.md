@@ -56,6 +56,9 @@ Go の生成先は `apps/api/internal/generated/`。サーバ実装は Phase 2 �
 アプリケーションは `@monorepo-project-template/api-client` の package entry から
 `createItemQueries({ baseUrl: '/api' })` を作り、`items.list({ page: 1, pageSize: 20 })`
 や `items.get(id)` を Query に渡す。baseUrl は Phase 4 の実行時設定から渡す。
+更新系は `createItemMutations({ baseUrl })` の `create()` / `update()` / `delete()` を
+`useMutation` に渡す。`mutate` の引数はそれぞれ body、`{ id, body }`、id。
+作成・更新は Item、削除はレスポンス本文なし（void）を返す。
 生成物の直接 import やアプリケーション側での型の二重定義は不要。
 HTTP エラーは `ApiError` に status と契約の body を保持して送出する。
 通信エラーはそのまま伝播し、再試行・表示・ログイン遷移・キャッシュ無効化の方針は

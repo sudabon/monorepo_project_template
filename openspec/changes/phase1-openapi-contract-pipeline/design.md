@@ -42,7 +42,11 @@ Go 側は Echo 用のサーバインタフェースと型を生成する。TypeS
 
 ### D3: 生成物は「編集しない領域」として隔離し、手書きラッパを 1 枚被せる
 
-`packages/api-client` を「生成物ディレクトリ」と「手書きラッパ」に物理的に分ける。ラッパは TanStack Query の `queryOptions` を返す関数だけを公開し、アプリケーションは生成物を直接 import しない。
+`packages/api-client` を「生成物ディレクトリ」と「手書きラッパ」に物理的に分ける。取得系は TanStack Query の `queryOptions`、作成・更新・削除は `mutationOptions` を返す関数を公開し、アプリケーションは生成物を直接 import しない。
+
+取得は `createItemQueries`、更新系は `createItemMutations` から options を取得する。
+更新系の入力は mutation 実行時に渡す。作成は body、更新は `{ id, body }`、削除は id。
+取得の再フェッチと更新操作の実行を分離し、キャッシュ無効化はアプリケーション側で設定する。
 
 - これにより、生成器を差し替えても影響範囲がラッパ層に閉じる
 - ラッパは薄く保つ。リトライ方針・エラーハンドリングは Phase 4 の QueryClient 側で決め、ここには書かない

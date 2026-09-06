@@ -5,6 +5,8 @@
       "apps/**",
       "packages/**",
       "!!packages/api-client/src/generated",
+      "!!apps/web/src/routeTree.gen.ts",
+      "!!**/dist",
       "scripts/**",
       "tests/**",
       "*.json",
@@ -17,6 +19,11 @@
   "formatter": {
     "indentStyle": "space",
     "indentWidth": 2
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   },
   "javascript": {
     "formatter": {

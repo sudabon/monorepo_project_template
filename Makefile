@@ -18,7 +18,8 @@ RENOVATE_NODE_MAJOR := 24
 
 .PHONY: setup setup-go setup-web gen gen-go gen-web gen-check gen-check-go gen-check-web fmt fmt-go fmt-web fmt-check \
 	fmt-check-go fmt-check-web lint lint-go lint-web test test-go test-web \
-		test-toolchain lint-contract build build-go build-web check check-test-plan validate-renovate
+		test-toolchain lint-contract build build-go build-web check check-test-plan validate-renovate \
+		dev-web typecheck-web
 
 .PHONY: db-up db-stop migrate-up migrate-down migrate-bff-up migrate-bff-down run-api run-bff test-unit
 
@@ -58,6 +59,12 @@ setup-go:
 setup-web:
 	PNPM='$(PNPM)' $(NODE) scripts/check-toolchain.mjs
 	$(PNPM) install --frozen-lockfile
+
+dev-web:
+	$(PNPM) --filter @monorepo-project-template/web dev
+
+typecheck-web:
+	$(PNPM) --filter @monorepo-project-template/web typecheck
 
 gen: gen-go gen-web
 
@@ -124,6 +131,7 @@ build-go:
 
 build-web:
 	$(PNPM) run build
+	$(PNPM) --filter @monorepo-project-template/web verify:config
 
 # Keep language checks identical to the language workflows, even with make -j.
 # check-test-plan matches the dedicated E2E plan workflow.

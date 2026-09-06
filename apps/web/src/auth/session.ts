@@ -21,9 +21,12 @@ export type Session = z.infer<typeof sessionSchema>;
 export const sessionQueryKey = ['session'] as const;
 
 export async function fetchSession(
+  authBaseUrl: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<Session> {
-  const response = await fetchImpl('/auth/session', { credentials: 'include' });
+  const response = await fetchImpl(`${authBaseUrl}/session`, {
+    credentials: 'include',
+  });
   if (!response.ok) {
     throw new Error('セッションを確認できませんでした');
   }

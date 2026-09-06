@@ -14,7 +14,10 @@ import { notifyAppError } from '../query/errorBus.ts';
 import { handleClassifiedError } from '../query/handleError.ts';
 import { createAppRouter } from '../router.tsx';
 
-export const defaultConfig: RuntimeConfig = { apiBaseUrl: '/api' };
+export const defaultConfig: RuntimeConfig = {
+  apiBaseUrl: '/api',
+  authBaseUrl: '/auth',
+};
 
 export const authedSession: Session = {
   authenticated: true,

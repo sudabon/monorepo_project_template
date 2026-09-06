@@ -4,10 +4,14 @@ import { ConfigLoadError, loadRuntimeConfig } from './load.ts';
 describe('loadRuntimeConfig', () => {
   it('returns parsed config from /config.json', async () => {
     const fetchImpl = vi.fn(async () =>
-      Response.json({ apiBaseUrl: 'https://bff.example/api' }),
+      Response.json({
+        apiBaseUrl: 'https://bff.example/api',
+        authBaseUrl: 'https://bff.example/auth',
+      }),
     );
     await expect(loadRuntimeConfig(fetchImpl)).resolves.toEqual({
       apiBaseUrl: 'https://bff.example/api',
+      authBaseUrl: 'https://bff.example/auth',
     });
     expect(fetchImpl).toHaveBeenCalledWith('/config.json', {
       cache: 'no-store',
@@ -31,7 +35,9 @@ describe('loadRuntimeConfig', () => {
   });
 
   it('fails when the schema does not match', async () => {
-    const fetchImpl = vi.fn(async () => Response.json({ apiBaseUrl: '' }));
+    const fetchImpl = vi.fn(async () =>
+      Response.json({ apiBaseUrl: '', authBaseUrl: '/auth' }),
+    );
     await expect(loadRuntimeConfig(fetchImpl)).rejects.toMatchObject({
       message: '設定ファイルの形式が不正です',
     });

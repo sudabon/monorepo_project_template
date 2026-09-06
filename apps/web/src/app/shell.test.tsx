@@ -1,5 +1,6 @@
 import { ApiError } from '@monorepo-project-template/api-client';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bootstrap } from '../bootstrap.tsx';
 import { createAppClients } from '../api/clients.ts';
@@ -71,7 +72,10 @@ describe('runtime config bootstrap', () => {
 describe('config-driven API destination', () => {
   it('sends traffic to the apiBaseUrl from config', async () => {
     const urls: string[] = [];
-    const config = { apiBaseUrl: 'https://staging.example/api' };
+    const config = {
+      apiBaseUrl: 'https://staging.example/api',
+      authBaseUrl: 'https://staging.example/auth',
+    };
     const queryClient = (
       await import('../query/createQueryClient.ts')
     ).createAppQueryClient();
@@ -83,6 +87,41 @@ describe('config-driven API destination', () => {
     await queryClient.fetchQuery(clients.items.list());
     expect(urls[0]).toContain('https://staging.example/api/items');
     queryClient.clear();
+  });
+});
+
+describe('config-driven auth destination', () => {
+  it('signs in and reads the session through authBaseUrl', async () => {
+    const urls: string[] = [];
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input instanceof Request ? input.url : input);
+      urls.push(url);
+      if (url.endsWith('/auth/session')) {
+        return jsonResponse({ authenticated: false });
+      }
+      if (url.endsWith('/auth/login')) {
+        return jsonResponse(authedSession);
+      }
+      throw new Error(`unexpected fetch ${url}`);
+    });
+    await renderApp({
+      path: '/login',
+      config: {
+        apiBaseUrl: 'https://staging.example/api',
+        authBaseUrl: 'https://staging.example/auth',
+      },
+      fetchImpl,
+    });
+    await userEvent.type(screen.getByLabelText('ユーザ名'), 'demo');
+    await userEvent.type(screen.getByLabelText('パスワード'), 'demo');
+    await userEvent.click(screen.getByRole('button', { name: 'ログイン' }));
+    await waitFor(() => {
+      expect(urls).toContain('https://staging.example/auth/login');
+    });
+    // A same-origin /auth/... request would mean the swapped config was ignored.
+    expect(
+      urls.every((url) => url.startsWith('https://staging.example/')),
+    ).toBe(true);
   });
 });
 
@@ -153,8 +192,8 @@ describe('auth routing', () => {
     const { queryClient } = await renderApp({ path: '/', fetchImpl });
     await screen.findByRole('heading', { name: 'ホーム' });
     const { sessionQueryOptions } = await import('../auth/sessionQuery.ts');
-    await queryClient.ensureQueryData(sessionQueryOptions());
-    await queryClient.ensureQueryData(sessionQueryOptions());
+    await queryClient.ensureQueryData(sessionQueryOptions('/auth'));
+    await queryClient.ensureQueryData(sessionQueryOptions('/auth'));
     const sessionCalls = fetchImpl.mock.calls.filter((call) =>
       String(call[0]).includes('/auth/session'),
     );

@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { sessionQueryKey, sessionSchema } from '../auth/session.ts';
+import { useRuntimeConfig } from '../config/RuntimeConfigContext.tsx';
 import { Button } from '../components/ui/button.tsx';
 import { Input } from '../components/ui/input.tsx';
 import { loginSchema, type LoginValues } from '../forms/loginSchema.ts';
@@ -10,6 +11,7 @@ import { loginSchema, type LoginValues } from '../forms/loginSchema.ts';
 export function LoginPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { authBaseUrl } = useRuntimeConfig();
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { username: '', password: '' },
@@ -27,7 +29,7 @@ export function LoginPage() {
       <form
         className="mt-6 flex flex-col gap-3"
         onSubmit={handleSubmit(async (values) => {
-          const response = await fetch('/auth/login', {
+          const response = await fetch(`${authBaseUrl}/login`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },

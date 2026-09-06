@@ -3,11 +3,15 @@
 `apps/web` の成果物は環境に依存しない。API の接続先は起動時に読む `/config.json` だけが持つ。
 
 ```json
-{ "apiBaseUrl": "/api" }
+{ "apiBaseUrl": "/api", "authBaseUrl": "/auth" }
 ```
 
-同一オリジン配信（CloudFront で SPA と BFF を同じホストにする）では `/api` のままでよい。
-接続先だけを変えるときは、ビルドし直さず `config.json` を差し替える。
+`apiBaseUrl` は業務 API、`authBaseUrl` はログインとセッション確認の接続先。どちらも BFF が
+受けるが、片方だけ差し替えられると「API は別オリジン、ログインは SPA 自身のオリジン」に
+割れるため、両方とも必須にしている。既定値は持たせない。
+
+同一オリジン配信（CloudFront で SPA と BFF を同じホストにする）では `/api` と `/auth` の
+ままでよい。接続先を変えるときは、ビルドし直さず `config.json` の 2 つを揃えて差し替える。
 
 ## CloudFront のキャッシュ
 

@@ -1,5 +1,16 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
+import { classifyError } from './classifyError.ts';
 import { shouldRetryQuery } from './retry.ts';
+
+declare module '@tanstack/react-query' {
+  interface Register {
+    mutationMeta: {
+      // Set by a mutation whose form maps contract field errors onto inputs.
+      // Without it a 422 would be shown twice: on the field and in a toast.
+      formHandlesValidation?: boolean;
+    };
+  }
+}
 
 export function createAppQueryClient(options?: {
   onError?: (error: unknown) => void;
@@ -12,7 +23,13 @@ export function createAppQueryClient(options?: {
       },
     }),
     mutationCache: new MutationCache({
-      onError: (error) => {
+      onError: (error, _variables, _context, mutation) => {
+        if (
+          mutation.meta?.formHandlesValidation &&
+          classifyError(error).kind === 'validation'
+        ) {
+          return;
+        }
         onError?.(error);
       },
     }),

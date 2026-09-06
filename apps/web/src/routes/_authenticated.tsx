@@ -5,7 +5,7 @@ import { RouteErrorFallback } from '../components/ErrorFallback.tsx';
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ context }) => {
     const session = await context.queryClient.ensureQueryData(
-      sessionQueryOptions(),
+      sessionQueryOptions(context.config.authBaseUrl),
     );
     if (!session.authenticated) {
       throw redirect({ to: '/login' });

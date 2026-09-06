@@ -19,3 +19,29 @@ describe('itemInputSchema', () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe('itemInputSchema length limits', () => {
+  it('accepts the contract maximums', () => {
+    const result = itemInputSchema.safeParse({
+      name: 'a'.repeat(100),
+      description: 'b'.repeat(2000),
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a name longer than the contract allows', () => {
+    const result = itemInputSchema.safeParse({
+      name: 'a'.repeat(101),
+      description: '',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a description longer than the contract allows', () => {
+    const result = itemInputSchema.safeParse({
+      name: 'Widget',
+      description: 'b'.repeat(2001),
+    });
+    expect(result.success).toBe(false);
+  });
+});

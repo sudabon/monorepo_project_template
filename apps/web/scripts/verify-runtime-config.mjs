@@ -48,7 +48,10 @@ function serve(root, port) {
 }
 
 const original = JSON.parse(readFileSync(join(distDir, 'config.json'), 'utf8'));
-const swapped = { apiBaseUrl: 'https://other.example/api' };
+const swapped = {
+  apiBaseUrl: 'https://other.example/api',
+  authBaseUrl: 'https://other.example/auth',
+};
 writeFileSync(join(distDir, 'config.json'), `${JSON.stringify(swapped)}\n`);
 
 const server = await serve(distDir, 4179);
@@ -57,8 +60,11 @@ try {
     cache: 'no-store',
   });
   const body = await response.json();
-  if (body.apiBaseUrl !== swapped.apiBaseUrl) {
-    throw new Error(`expected swapped apiBaseUrl, got ${JSON.stringify(body)}`);
+  if (
+    body.apiBaseUrl !== swapped.apiBaseUrl ||
+    body.authBaseUrl !== swapped.authBaseUrl
+  ) {
+    throw new Error(`expected swapped base URLs, got ${JSON.stringify(body)}`);
   }
 } finally {
   writeFileSync(join(distDir, 'config.json'), `${JSON.stringify(original)}\n`);
@@ -66,5 +72,5 @@ try {
 }
 
 console.log(
-  'Runtime config swap OK: the same dist serves a different apiBaseUrl from config.json.',
+  'Runtime config swap OK: the same dist serves different base URLs from config.json.',
 );

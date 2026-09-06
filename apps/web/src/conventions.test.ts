@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -26,6 +26,19 @@ const forbidden = [
   'shadcn',
 ];
 
+function appSources(): string[] {
+  return readdirSync(join(webRoot, 'src'), {
+    recursive: true,
+    encoding: 'utf8',
+  }).filter(
+    (entry) =>
+      (entry.endsWith('.ts') || entry.endsWith('.tsx')) &&
+      !entry.endsWith('.test.ts') &&
+      !entry.endsWith('.test.tsx') &&
+      entry !== 'routeTree.gen.ts',
+  );
+}
+
 describe('template conventions', () => {
   it('does not declare UI component libraries as dependencies', () => {
     const manifest = JSON.parse(
@@ -49,20 +62,13 @@ describe('template conventions', () => {
   });
 
   it('does not use React.Suspense for loading', () => {
-    const files = [
-      'src/bootstrap.tsx',
-      'src/main.tsx',
-      'src/router.tsx',
-      'src/pages/HomePage.tsx',
-      'src/pages/LoginPage.tsx',
-      'src/routes/__root.tsx',
-      'src/routes/login.tsx',
-      'src/routes/_authenticated.tsx',
-      'src/routes/_authenticated/index.tsx',
-    ];
+    // Walk src instead of listing files: an enumerated list silently stops
+    // covering whatever is added next.
+    const files = appSources();
+    expect(files.length).toBeGreaterThan(20);
     for (const file of files) {
-      const source = readFileSync(join(webRoot, file), 'utf8');
-      expect(source).not.toMatch(/\bSuspense\b/);
+      const source = readFileSync(join(webRoot, 'src', file), 'utf8');
+      expect(source, `${file} uses Suspense`).not.toMatch(/\bSuspense\b/);
     }
   });
 });

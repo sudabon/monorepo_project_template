@@ -63,3 +63,43 @@ describe('createAppQueryClient retry', () => {
     client.clear();
   });
 });
+
+describe('createAppQueryClient mutation errors', () => {
+  async function runMutation(
+    client: QueryClient,
+    error: unknown,
+    meta?: { formHandlesValidation?: boolean },
+  ): Promise<void> {
+    const mutation = client.getMutationCache().build(client, {
+      mutationFn: async () => {
+        throw error;
+      },
+      ...(meta ? { meta } : {}),
+    });
+    await mutation.execute(undefined).catch(() => undefined);
+  }
+
+  it('stays quiet for a 422 when the form renders the field errors', async () => {
+    const onError = vi.fn();
+    const client = createAppQueryClient({ onError });
+    await runMutation(client, apiError(422), { formHandlesValidation: true });
+    expect(onError).not.toHaveBeenCalled();
+    client.clear();
+  });
+
+  it('still reports a 422 when no form claims it', async () => {
+    const onError = vi.fn();
+    const client = createAppQueryClient({ onError });
+    await runMutation(client, apiError(422));
+    expect(onError).toHaveBeenCalledOnce();
+    client.clear();
+  });
+
+  it('reports a 5xx even when the form handles validation', async () => {
+    const onError = vi.fn();
+    const client = createAppQueryClient({ onError });
+    await runMutation(client, apiError(500), { formHandlesValidation: true });
+    expect(onError).toHaveBeenCalledOnce();
+    client.clear();
+  });
+});

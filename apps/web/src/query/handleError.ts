@@ -12,6 +12,7 @@ export function handleClassifiedError(
     case 'auth':
       deps.onAuthError();
       return;
+    case 'validation':
     case 'server':
     case 'unknown':
       deps.onNotify(classified.message);

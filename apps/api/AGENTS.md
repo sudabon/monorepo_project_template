@@ -1,5 +1,7 @@
 # Go API の実装規約
 
+このファイルが API 作業の正。ルートの [AGENTS.md](../../AGENTS.md) は案内だけ。
+
 - `internal/domain`: エンティティ、ビジネスルール、repository インタフェース。
   Go 標準ライブラリだけに依存する。生成型、Echo、DB ドライバを持ち込まない。
 - `internal/usecase`: domain の型と repository インタフェースで業務操作を実行する。

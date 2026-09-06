@@ -1,5 +1,9 @@
 # SPA（`apps/web`）の骨格規約
 
+このファイルがフロントエンド作業の正。ルートの [AGENTS.md](../../AGENTS.md) は案内だけ。API / BFF のファイルは開かない。
+
+生成物 `src/routeTree.gen.ts` は手編集しない。ルートファイルを直して Vite プラグインに再生成させる。
+
 ## 実行時設定
 
 - ビルド時に環境値を埋め込まない。`import.meta.env` の `VITE_*` も使わない。
@@ -39,7 +43,7 @@
 
 ## テスト
 
-- 骨格の振る舞いは Vitest + Testing Library で確認する。Playwright は Phase 5 のスモークに任せる。
+- 骨格の振る舞いは Vitest + Testing Library で確認する。ブラウザ操作は `tests/e2e` の Playwright に任せる。
 - アクセシブルネームに依存する。UI 文言の変更は仕様変更として扱う。変更する前に
   該当する OpenSpec change の `test-plan.md` を先に更新し、E2E の期待結果と揃えてから
   画面を直す。

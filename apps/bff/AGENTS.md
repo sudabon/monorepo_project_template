@@ -1,5 +1,7 @@
 # BFF の実装規約
 
+このファイルが BFF 作業の正。ルートの [AGENTS.md](../../AGENTS.md) は案内だけ。
+
 - ブラウザ向けの認証はここで完結する。セッション発行・確認・失効と CSRF 検証を
   BFF が行う。`apps/api` にログインや Cookie 検証を持ち込まない。
 - `internal/session`: セッションの発行・取得・失効。本番は PostgreSQL。

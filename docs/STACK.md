@@ -1,7 +1,15 @@
-# ツールチェーン
+# 採用技術
 
 基本ツールチェーンは 2026-09-05、契約ツールは 2026-09-06 に公式配布元で確認した
-安定版（プレリリースを除く）を採用する。依存の対応範囲による制約は以下に記す。
+安定版（プレリリースを除く）を採用する。バージョンの正は依存宣言であり、この表は選定理由の記録である。
+
+突き合わせ先:
+
+- Node / npm: ルート `package.json`、`apps/web/package.json`、`packages/api-client/package.json`、`.node-version`
+- Go: `go.work`、`apps/api/go.mod`、`apps/bff/go.mod`、`packages/go-platform/go.mod`
+- DB イメージ: `compose.yaml`、`.github/workflows/go.yml`
+
+メジャー更新の手順は [UPGRADING.md](UPGRADING.md)。依存の対応範囲による制約は以下に記す。
 
 | ツール | 固定バージョン | 採用理由 | 次のメジャー更新で確認する点 |
 | --- | --- | --- | --- |
@@ -12,6 +20,7 @@
 | oapi-codegen | 2.8.0 | `apps/api/go.mod` の tool directive で固定し、Echo の通常・strict インタフェースと型を生成 | 設定スキーマ、生成インタフェース、Echo / runtime の対応範囲 |
 | Echo | 4.15.4 | API の生成サーバと BFF の実行時依存 | v5 は生成設定と handler の同時移行が必要 |
 | oapi-codegen/runtime | 1.7.0 | 生成されたパラメータ・strict middleware の共通処理 | バインド処理と strict handler のシグネチャ |
+| kin-openapi | 0.142.0 | 生成コードと実行時が参照する OpenAPI モデル。`apps/api/go.mod` の direct require | スキーマ解釈と validation の破壊的変更 |
 | openapi-typescript | 7.13.0 | 読める型定義だけを生成し、実行時コードを増やさない | OpenAPI の解釈、生成型名、TypeScript peer の対応範囲 |
 | openapi-fetch | 0.17.0 | 生成型に従う薄い fetch クライアント | 0.x の minor 更新でも返り値・middleware・パスの型推論を確認 |
 | TypeScript | 5.9.3 | openapi-typescript 7.13.0 の peer が 5.x のため、その最新 patch を固定 | 6 / 7 への更新は生成器の peer 対応を待ち、型テストで確認 |
@@ -22,6 +31,7 @@
 | Tailwind CSS / @tailwindcss/vite | 4.3.3 / 4.3.3 | v4 は Vite プラグインで読み込む。PostCSS 設定は置かない | `@theme inline`、プラグイン指令、ビルド成果物の CSS |
 | react-hook-form / @hookform/resolvers / zod | 7.87.0 / 5.9.1 / 4.5.4 | クライアント検証と契約エラーのフィールドマッピング | resolver の Zod 対応、`setError` の root エラー |
 | Vitest / Testing Library / jsdom | 5.0.0 / 16.3.3（jest-dom 7.0.1、user-event 14.6.7） / 30.0.1 | SPA のユニット・コンポーネントテスト。E2E は Playwright に分けて残す | Vite 連携、jsdom 環境、Testing Library のクエリ |
+| Playwright (`@playwright/test`) | 1.63.0 | ブラウザ E2E。ルートの開発依存。規約は [E2E_CONVENTIONS.md](E2E_CONVENTIONS.md) | 設定スキーマ、trace / reporter、コンポーネントテストとの役割分担 |
 | @types/node | 26.4.1 | `node:test` を使う通信テストを `tsc --noEmit` の対象に含めるため。Node.js 26 系に合わせる | Node.js のメジャー更新への追随、DOM lib との global 衝突 |
 | Spectral CLI | 6.16.3 | OAS 推奨ルールと契約固有ルールを pnpm から実行 | 推奨ルールの追加、Node 対応、診断と終了コード |
 | PostgreSQL | 18.3-alpine | ローカルの Compose と CI のサービスコンテナで同じ版を使う | SQL とデータ型の非互換、`pg_isready` の挙動、major 間のダンプ移行手順 |
@@ -38,8 +48,7 @@ Biome は ESLint + Prettier より依存と設定を少なくできるため採�
 [ADR 0002](adr/0002-openapi-contract-tools.md) を参照。
 Spectral の推移依存 `@scarf/scarf` は analytics 用のインストール処理が不要なため、
 `pnpm-workspace.yaml` の `allowBuilds` で明示的に無効化する。
-Playwright の既存設定・レポートスクリプトは後続フェーズで利用し、ブラウザテストや Playwright のインストールはここでは行わない。
-E2E の実装規約は [E2E_CONVENTIONS.md](E2E_CONVENTIONS.md) に置く。
+E2E は Playwright。実装規約は [E2E_CONVENTIONS.md](E2E_CONVENTIONS.md)。
 
 ## ローカルと CI
 

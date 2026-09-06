@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { authedSession, renderApp } from '../../test/renderApp.tsx';
@@ -319,7 +319,8 @@ describe('sample resource create and edit', () => {
 
   it('shows server field errors and does not keep a rejected create', async () => {
     const user = userEvent.setup();
-    const created = false;
+    // The list reads this array, so an accepted create would show up below.
+    const stored: (typeof itemA)[] = [];
     await renderApp({
       path: '/items/new',
       session: authedSession,
@@ -340,10 +341,10 @@ describe('sample resource create and edit', () => {
         }
         if (url.includes('/api/items')) {
           return jsonResponse({
-            items: created ? [itemA] : [],
+            items: stored,
             page: 1,
             pageSize: 20,
-            total: created ? 1 : 0,
+            total: stored.length,
           });
         }
         throw new Error(`unexpected fetch ${url}`);
@@ -354,10 +355,14 @@ describe('sample resource create and edit', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       '同じ名前は使えません',
     );
-    expect(created).toBe(false);
     expect(
       screen.getByRole('heading', { name: 'サンプルリソースを作成' }),
     ).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: '一覧へ戻る' }));
+    expect(
+      await screen.findByText('該当するサンプルリソースはありません'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Alpha Widget')).not.toBeInTheDocument();
   });
 
   it('disables submit while a create request is in flight', async () => {
@@ -441,5 +446,70 @@ describe('sample resource delete', () => {
       await screen.findByRole('heading', { name: 'サンプルリソース' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('Alpha Widget')).not.toBeInTheDocument();
+  });
+});
+
+describe('sample resource list while filtering', () => {
+  it('does not claim "no results" alongside a working pager', async () => {
+    const page1 = Array.from({ length: 20 }, (_, index) => ({
+      ...itemA,
+      id: `${String(index + 1).padStart(8, '0')}-1111-4111-8111-111111111111`,
+      name: `Widget ${index + 1}`,
+    }));
+    await renderApp({
+      path: '/items?q=Widget+21&page=1',
+      session: authedSession,
+      config: testConfig,
+      fetchImpl: itemsFetch(async (input) => {
+        const url = String(input instanceof Request ? input.url : input);
+        if (url.includes('/api/items')) {
+          return jsonResponse({
+            items: page1,
+            page: 1,
+            pageSize: 20,
+            total: 21,
+          });
+        }
+        throw new Error(`unexpected fetch ${url}`);
+      }),
+    });
+    // The match lives on page 2, which the client-side filter cannot reach.
+    expect(
+      await screen.findByText(
+        'このページに該当するサンプルリソースはありません',
+      ),
+    ).toBeInTheDocument();
+    // Offering "next page" here would contradict the message above.
+    expect(
+      screen.queryByRole('button', { name: '次のページ' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText('ページ 1 の中だけを名前で絞り込んでいます'),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('sample resource detail failures', () => {
+  it('separates a missing item from a failed request', async () => {
+    const cases = [
+      { status: 404, text: 'サンプルリソースが見つかりません' },
+      { status: 500, text: 'サンプルリソースを取得できませんでした' },
+    ];
+    for (const { status, text } of cases) {
+      await renderApp({
+        path: `/items/${itemA.id}`,
+        session: authedSession,
+        config: testConfig,
+        fetchImpl: itemsFetch(async (input) => {
+          const url = String(input instanceof Request ? input.url : input);
+          if (url.includes('/api/items')) {
+            return jsonResponse({ code: 'error', message: 'x' }, status);
+          }
+          throw new Error(`unexpected fetch ${url}`);
+        }),
+      });
+      expect(await screen.findByText(text)).toBeInTheDocument();
+      cleanup();
+    }
   });
 });

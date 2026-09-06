@@ -25,8 +25,11 @@ export function ItemListPage({ search, onQueryChange, onPageChange }: Props) {
   );
   const items = query.data?.items ?? [];
   // TODO(template): 契約に検索クエリが無いため、表示中ページを名前で絞り込む。
-  // サーバ側検索が必要なら OpenAPI の listItems に q を追加する。
-  const visible = search.q
+  // total はサーバの全件数なので、絞り込み中はページャを出さない。両方を出すと
+  // 「該当なし」と「次のページあり」が同時に成立して読み手を誤らせる。
+  // サーバ側検索が必要なら OpenAPI の listItems に q を追加する（要ユーザ承認）。
+  const filtering = search.q !== '';
+  const visible = filtering
     ? items.filter((item) =>
         item.name.toLowerCase().includes(search.q.toLowerCase()),
       )
@@ -51,10 +54,19 @@ export function ItemListPage({ search, onQueryChange, onPageChange }: Props) {
           value={search.q}
           onChange={(event) => onQueryChange(event.target.value)}
         />
+        {filtering ? (
+          <p className="mt-1 text-sm text-muted-foreground">
+            ページ {search.page} の中だけを名前で絞り込んでいます
+          </p>
+        ) : null}
       </div>
       {query.isPending ? <p>読み込み中</p> : null}
       {query.isSuccess && visible.length === 0 ? (
-        <p>該当するサンプルリソースはありません</p>
+        <p>
+          {filtering
+            ? 'このページに該当するサンプルリソースはありません'
+            : '該当するサンプルリソースはありません'}
+        </p>
       ) : null}
       {visible.length > 0 ? (
         <Table>
@@ -80,21 +92,23 @@ export function ItemListPage({ search, onQueryChange, onPageChange }: Props) {
           </TableBody>
         </Table>
       ) : null}
-      <div className="mt-4 flex items-center gap-3">
-        <p>ページ {search.page}</p>
-        <Button
-          disabled={search.page <= 1}
-          onClick={() => onPageChange(search.page - 1)}
-        >
-          前のページ
-        </Button>
-        <Button
-          disabled={search.page >= totalPages}
-          onClick={() => onPageChange(search.page + 1)}
-        >
-          次のページ
-        </Button>
-      </div>
+      {filtering ? null : (
+        <div className="mt-4 flex items-center gap-3">
+          <p>ページ {search.page}</p>
+          <Button
+            disabled={search.page <= 1}
+            onClick={() => onPageChange(search.page - 1)}
+          >
+            前のページ
+          </Button>
+          <Button
+            disabled={search.page >= totalPages}
+            onClick={() => onPageChange(search.page + 1)}
+          >
+            次のページ
+          </Button>
+        </div>
+      )}
     </main>
   );
 }

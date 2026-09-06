@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { ItemForm } from '../../forms/ItemForm.tsx';
+import { itemLoadMessage } from './ItemDetailPage.tsx';
 import type { ItemInputValues } from '../../forms/itemInputSchema.ts';
 
 type Props = {
@@ -31,10 +32,10 @@ export function ItemEditPage({ itemId }: Props) {
     );
   }
 
-  if (!query.data) {
+  if (query.isError || !query.data) {
     return (
       <main className="p-6">
-        <p>サンプルリソースが見つかりません</p>
+        <p role="alert">{itemLoadMessage(query.error)}</p>
       </main>
     );
   }

@@ -1,3 +1,4 @@
+import { ApiError } from '@monorepo-project-template/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -25,10 +26,12 @@ export function ItemDetailPage({ itemId }: Props) {
     );
   }
 
-  if (!query.data) {
+  // A failed request is not the same as a missing resource; saying "not found"
+  // for a 500 sends the reader after the wrong problem.
+  if (query.isError || !query.data) {
     return (
       <main className="p-6">
-        <p>サンプルリソースが見つかりません</p>
+        <p role="alert">{itemLoadMessage(query.error)}</p>
       </main>
     );
   }
@@ -90,4 +93,11 @@ export function ItemDetailPage({ itemId }: Props) {
       </Modal>
     </main>
   );
+}
+
+export function itemLoadMessage(error: unknown): string {
+  if (error instanceof ApiError && error.status === 404) {
+    return 'サンプルリソースが見つかりません';
+  }
+  return 'サンプルリソースを取得できませんでした';
 }

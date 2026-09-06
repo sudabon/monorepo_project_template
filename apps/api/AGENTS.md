@@ -9,7 +9,8 @@
 - `internal/handler`: 生成された `ServerInterface`、入力検証、生成型と domain 型の変換、
   HTTP ステータスと契約のエラー形式への変換。具象 repository を import しない。
 - `cmd/api`: 設定、DB、repository、usecase、handler の DI とプロセス起動。
-  `internal/platform`: DB プール、context 対応 slog、シグナルと終了処理。
+  DB プール、context 対応 slog、シグナルと終了処理は `packages/go-platform`
+  の共有モジュールを使う。BFF と同じ実装であり、複製しない（[ADR 0006](../../docs/adr/0006-shared-go-platform-module.md)）。
 - `migrations`: goose の SQL Up / Down。`cmd/migrate` で実行し、API 起動で自動適用しない。
 - `internal/testdb`: 統合テスト専用。production からの依存は禁止。
 
@@ -21,7 +22,9 @@
 
 リクエストに関連するログは必ず `slog.InfoContext(ctx, ...)` 等を使い、
 `X-Request-ID` を保持した context を DB/ダウンストリームにも渡す。
-認証は後続フェーズの BFF が担当する。API を直接インターネットに公開しない。
+認証は BFF が担当する。API を直接インターネットに公開しない。
+BFF が付ける `X-User-ID` はネットワーク境界を信頼する。クライアント由来の
+同名ヘッダを API が信用してはならない。
 
 検証: `make test-unit` は DB 不要、`make test-go` は実 PostgreSQL と SIGTERM のテストを含む。
 `TEST_DATABASE_URL` を指定しなければ Compose の DB を起動する。

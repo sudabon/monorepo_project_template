@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
+	"github.com/sudabon/monorepo_project_template/apps/bff/migrations"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/database"
+	"uuid"
 )
 
 func Open(t *testing.T) *sql.DB {
@@ -26,7 +26,7 @@ func Open(t *testing.T) *sql.DB {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = admin.Close() })
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
 	defer cancel()
 	schema := "test_" + uuid.New().String()
 	quoted := `"` + schema + `"`

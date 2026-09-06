@@ -13,8 +13,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/domain"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/generated"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/platform/logging"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/usecase"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/logging"
 )
 
 func New(items *usecase.Items, ping func(context.Context) error) *echo.Echo {

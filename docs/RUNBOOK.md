@@ -1,25 +1,32 @@
-# API のローカル起動と運用
+# API と BFF のローカル起動と運用
 
 ```sh
 make setup
 make db-up
 make migrate-up
+make migrate-bff-up
 make run-api
+make run-bff
 ```
 
-API は `http://localhost:8080/api/items` で待ち受ける。DB はローカルの
-`localhost:55432`。開発用のユーザ・パスワード・DB 名は `template`。
-停止は API に Ctrl-C、DB に `make db-stop`。DB の volume は保持される。
-直前の migration を戻すコマンドは `make migrate-down`。items の初期 migration の
-rollback はテーブルを削除するため、必要なデータのある DB では実行しない。
+API は `http://localhost:8080/api/items`、BFF は `http://localhost:8081` で待ち受ける。
+ブラウザ向けの呼び出しは BFF 経由にする。DB はローカルの `localhost:55432`。
+開発用のユーザ・パスワード・DB 名は `template`。BFF のデモログインは `demo` / `demo`。
+停止は各プロセスに Ctrl-C、DB に `make db-stop`。DB の volume は保持される。
+直前の migration を戻すコマンドは `make migrate-down` / `make migrate-bff-down`。
+items の初期 migration の rollback はテーブルを削除するため、必要なデータのある
+DB では実行しない。
 
 | 設定 | 既定値・用途 |
 | --- | --- |
 | `DATABASE_URL` | Make 経由は開発 DB。バイナリを直接起動する場合は必須。PostgreSQL 接続 URL |
-| `HTTP_ADDR` | `:8080`。HTTP 待ち受けアドレス |
+| `HTTP_ADDR` | API 既定 `:8080`、BFF 既定 `:8081`。`make run-bff` は `:8081` |
 | `SHUTDOWN_TIMEOUT` | `20s`。SIGTERM 後の処理完了待ち上限。正の Go duration |
 | `TEST_DATABASE_URL` | 未設定なら Compose を起動。設定済みならその専用 DB に一時 schema を作成 |
 | `POSTGRES_PORT` | Compose のホスト側ポート。既定 `55432`。変更時は `DATABASE_URL` も合わせる |
+| `BACKEND_URL` | BFF が転送する API の絶対 URL。`make run-bff` は `http://127.0.0.1:8080` |
+| `BFF_DEMO_USERNAME` / `BFF_DEMO_PASSWORD` | テンプレートのデモユーザ。`make run-bff` は `demo` / `demo` |
+| `BFF_COOKIE_SECURE` | 既定 `true`。`make run-bff` はローカル HTTP 用に `false` |
 
 `GET /health/shallow` は DB に接続せず 200 を返す。ALB のヘルスチェックには
 このパスを指定する。`GET /health/deep` は DB の Ping を最大 2 秒待ち、
@@ -47,6 +54,7 @@ make test        # Go と TypeScript のテスト
 make check      # 整形、lint、生成差分、テスト、build、E2E 計画ガード
 ```
 
-認証・認可は Phase 3 の BFF で実装する。現段階の API は信頼できる内部ネットワークに置く。
+認証は BFF が担当する。API は信頼できる内部ネットワークに置く。
+BFF の Cookie 属性・CSRF・セッション寿命は [bff.md](bff.md) を参照。
 offset pagination は固定されたデータ集合で重複・欠落がなく、同一応答の total/items は
 DB の同じ snapshot を使う。複数リクエストの間に挿入・削除があればページ境界は動く。

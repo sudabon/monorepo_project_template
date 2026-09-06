@@ -18,8 +18,9 @@ func Open(url string) (*sql.DB, error) {
 	}
 	config.ConnectTimeout = 3 * time.Second
 	db := stdlib.OpenDB(*config)
-	// Ten connections per task leaves capacity for other tasks and migrations;
-	// size the DB max_connections for the maximum ECS task count before scaling.
+	// Ten connections per pool. Both the API and the BFF open one pool per task
+	// against the same database, so budget max_connections for
+	// (API tasks + BFF tasks) * 10 plus headroom for migrations before scaling.
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(2)
 	// Retire idle sessions quickly and periodically replace long-lived sessions.

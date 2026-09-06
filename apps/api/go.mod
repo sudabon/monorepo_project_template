@@ -2,17 +2,21 @@ module github.com/sudabon/monorepo_project_template/apps/api
 
 go 1.27.1
 
+// The shared Go platform module is not published; resolve it from the repository.
+replace github.com/sudabon/monorepo_project_template/packages/go-platform => ../../packages/go-platform
+
 require (
 	github.com/getkin/kin-openapi v0.142.0
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.10.0
 	github.com/labstack/echo/v4 v4.15.4
 	github.com/oapi-codegen/runtime v1.7.0
 	github.com/pressly/goose/v3 v3.28.0
+	github.com/sudabon/monorepo_project_template/packages/go-platform v0.0.0-00010101000000-000000000000
 )
 
 require (
 	cdr.dev/slog v1.4.2-0.20221206192828-e4803b10ae17 // indirect
+	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
 	github.com/alecthomas/chroma/v2 v2.5.0 // indirect
@@ -29,9 +33,11 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/pgx/v5 v5.10.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/labstack/gommon v0.5.0 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0 // indirect

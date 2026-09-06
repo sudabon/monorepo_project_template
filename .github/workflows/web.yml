@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/web/**'
       - 'packages/**' # Includes packages/api-client source, generated types, and type tests.
+      - '!packages/go-platform/**' # Go-only module; covered by the Go workflow.
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
@@ -20,6 +21,7 @@ on:
     paths:
       - 'apps/web/**'
       - 'packages/**' # Includes packages/api-client source, generated types, and type tests.
+      - '!packages/go-platform/**' # Go-only module; covered by the Go workflow.
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
+	"github.com/sudabon/monorepo_project_template/apps/bff/migrations"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/database"
 )
 

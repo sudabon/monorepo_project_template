@@ -13,10 +13,10 @@ import (
 
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/generated"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/handler"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/platform/logging"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/repository"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/testdb"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/usecase"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/logging"
 )
 
 func TestHealthAndErrorTracingWithUnavailableDB(t *testing.T) {

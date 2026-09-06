@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-task="${1:?usage: go-task.sh <setup|gen|fmt|fmt-check|lint|test|test-unit|build|run-api|migrate-up|migrate-down>}"
+task="${1:?usage: go-task.sh <setup|gen|fmt|fmt-check|lint|test|test-unit|build|run-api|run-bff|migrate-up|migrate-down|migrate-bff-up|migrate-bff-down>}"
 expected=$(awk '$1 == "go" { print $2 }' go.work)
 toolchain=$expected
 case $expected in
@@ -16,8 +16,11 @@ export GOTOOLCHAIN="go$toolchain"
 
 case "$task" in
   run-api) exec go -C apps/api run ./cmd/api ;;
+  run-bff) exec go -C apps/bff run ./cmd/bff ;;
   migrate-up) exec go -C apps/api run ./cmd/migrate up ;;
   migrate-down) exec go -C apps/api run ./cmd/migrate down ;;
+  migrate-bff-up) exec go -C apps/bff run ./cmd/migrate up ;;
+  migrate-bff-down) exec go -C apps/bff run ./cmd/migrate down ;;
   test-unit) exec go -C apps/api test ./internal/domain ./internal/usecase ;;
   test)
     if [ -z "${TEST_DATABASE_URL:-}" ]; then

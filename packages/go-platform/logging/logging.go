@@ -1,3 +1,5 @@
+// Package logging gives every service the same JSON logger and request-ID
+// propagation, so one trace reads the same way across the API and the BFF.
 package logging
 
 import (

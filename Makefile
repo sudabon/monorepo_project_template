@@ -5,6 +5,8 @@ SHELL := /bin/bash
 NODE ?= node
 PNPM ?= pnpm
 BASE ?= origin/main
+DATABASE_URL ?= postgres://template:template@localhost:55432/template?sslmode=disable
+export DATABASE_URL
 GENERATED_GO_PATHS := apps/api/internal/generated
 GENERATED_WEB_PATHS := packages/api-client/src/generated
 GENERATED_PATHS := $(GENERATED_GO_PATHS) $(GENERATED_WEB_PATHS)
@@ -17,6 +19,26 @@ RENOVATE_NODE_MAJOR := 24
 .PHONY: setup setup-go setup-web gen gen-go gen-web gen-check gen-check-go gen-check-web fmt fmt-go fmt-web fmt-check \
 	fmt-check-go fmt-check-web lint lint-go lint-web test test-go test-web \
 		test-toolchain lint-contract build build-go build-web check check-test-plan validate-renovate
+
+.PHONY: db-up db-stop migrate-up migrate-down run-api test-unit
+
+db-up:
+	docker compose up -d --wait postgres
+
+db-stop:
+	docker compose stop postgres
+
+migrate-up:
+	bash scripts/go-task.sh migrate-up
+
+migrate-down:
+	bash scripts/go-task.sh migrate-down
+
+run-api:
+	bash scripts/go-task.sh run-api
+
+test-unit:
+	bash scripts/go-task.sh test-unit
 
 setup: setup-go setup-web
 

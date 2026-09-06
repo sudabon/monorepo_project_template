@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-task="${1:?usage: go-task.sh <setup|gen|fmt|fmt-check|lint|test|build>}"
+task="${1:?usage: go-task.sh <setup|gen|fmt|fmt-check|lint|test|test-unit|build|run-api|migrate-up|migrate-down>}"
 expected=$(awk '$1 == "go" { print $2 }' go.work)
 toolchain=$expected
 case $expected in
@@ -13,6 +13,19 @@ case $expected in
     ;;
 esac
 export GOTOOLCHAIN="go$toolchain"
+
+case "$task" in
+  run-api) exec go -C apps/api run ./cmd/api ;;
+  migrate-up) exec go -C apps/api run ./cmd/migrate up ;;
+  migrate-down) exec go -C apps/api run ./cmd/migrate down ;;
+  test-unit) exec go -C apps/api test ./internal/domain ./internal/usecase ;;
+  test)
+    if [ -z "${TEST_DATABASE_URL:-}" ]; then
+      docker compose up -d --wait postgres
+      export TEST_DATABASE_URL="postgres://template:template@localhost:${POSTGRES_PORT:-55432}/template?sslmode=disable"
+    fi
+    ;;
+esac
 
 # Generation runs before the module loop: only apps/api holds the contract tool,
 # and routing it here keeps GOTOOLCHAIN derived in exactly one place.
@@ -50,8 +63,15 @@ while IFS= read -r module; do
         continue
       fi
       case "$task" in
-        lint) (cd "$module" && go vet ./...) ;;
-        test) (cd "$module" && go test ./...) ;;
+        lint)
+          (cd "$module" && go vet ./...)
+          # Keep direct/indirect accurate so dependency PRs carry no extra go.mod diff.
+          (cd "$module" && go mod tidy -diff)
+          if [ -f "$module/.go-arch-lint.yml" ]; then
+            (cd "$module" && go tool go-arch-lint check)
+          fi
+          ;;
+        test) (cd "$module" && go test -count=1 ./...) ;;
         build) (cd "$module" && go build ./...) ;;
       esac
       ;;

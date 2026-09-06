@@ -19,6 +19,11 @@
 | React / @types/react | 19.2.8 / 19.2.18 | Query の開発時 peer と型検証に使用 | React peer と JSX / hook 型の互換性 |
 | @types/node | 26.4.1 | `node:test` を使う通信テストを `tsc --noEmit` の対象に含めるため。Node.js 26 系に合わせる | Node.js のメジャー更新への追随、DOM lib との global 衝突 |
 | Spectral CLI | 6.16.3 | OAS 推奨ルールと契約固有ルールを pnpm から実行 | 推奨ルールの追加、Node 対応、診断と終了コード |
+| PostgreSQL | 18.3-alpine | ローカルの Compose と CI のサービスコンテナで同じ版を使う | SQL とデータ型の非互換、`pg_isready` の挙動、major 間のダンプ移行手順 |
+| pgx | 5.10.0 | `database/sql` ドライバとして SQL を直接書く。ORM を持ち込まない | DSN の解釈、`stdlib` の接続プール設定、型変換の変更 |
+| goose | 3.28.0 | 単一の SQL に Up / Down を書き、Provider API を統合テストでも使う | Provider API のシグネチャ、version テーブルの構成、埋め込み FS の扱い |
+| go-arch-lint | 1.18.0 | 層の依存許可グラフを宣言で書き、`make lint-go` で検査 | 設定 version、component 記法、`deepScan` の判定 |
+| google/uuid | 1.6.0 | リクエスト ID の生成と生成型の UUID 変換 | 生成方式と文字列表現 |
 
 配布元: [Go](https://go.dev/dl/)、[Node.js](https://nodejs.org/dist/index.json)、[pnpm](https://registry.npmjs.org/pnpm/latest)、[Biome](https://registry.npmjs.org/@biomejs/biome/latest)。
 
@@ -47,13 +52,21 @@ Go と TypeScript のソースがまだない workspace は成功としてスキ
 HEAD との差分と未追跡の生成物を検出する。生成物は仕様と一緒にコミットする。
 手書きコードだけの未コミット変更では失敗しない。
 Go / Web CI は `make gen-check-go` / `make gen-check-web` を使い、他言語の実行環境を
-必要としない。Contract CI は両方の実行環境を用意し、lint と `make gen-check`、
+必要としない。Go CI が実行するのは `make test-go` であり、`make test` は使わない。
+Contract CI は両方の実行環境を用意し、lint と `make gen-check`、
 `git diff --exit-code` を実行する。
+
+`make lint-go` は go vet に加えて go-arch-lint で層の依存方向を検査し、
+`go mod tidy -diff` で go.mod の未整理を検出する。Go の統合テストは実 PostgreSQL を使う。
+`make test-go` は `TEST_DATABASE_URL` が未設定なら Compose を起動し、CI は同じ環境変数で
+サービスコンテナを指す。DB・マイグレーション・依存方向検査の選定理由は
+[ADR 0003](adr/0003-api-database-and-architecture.md)、起動手順は [RUNBOOK](RUNBOOK.md) を参照。
 
 TypeScript の生成物 `packages/api-client/src/generated/` は Biome の対象外。
 生成型を手編集せず、契約を修正して `make gen` を再実行する。
 Go の生成先は `apps/api/internal/generated/`。生成は `scripts/go-task.sh gen` 経由で行い、
-GOTOOLCHAIN の導出をこのスクリプト 1 か所に閉じる。サーバ実装は Phase 2 で追加する。
+GOTOOLCHAIN の導出をこのスクリプト 1 か所に閉じる。サーバ実装は `apps/api/` にあり、
+層の責務と依存方向は [apps/api/AGENTS.md](../apps/api/AGENTS.md) に置く。
 `packages/api-client` の型検証は `src` と `tests` の両方を対象にする。
 
 アプリケーションは `@monorepo-project-template/api-client` の package entry から

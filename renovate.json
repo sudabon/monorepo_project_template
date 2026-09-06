@@ -5,6 +5,7 @@
     "gomod",
     "npm",
     "github-actions",
+    "docker-compose",
     "nodenv",
     "custom.regex"
   ],
@@ -34,6 +35,11 @@
       "description": "Keep .node-version and engines.node in one PR; check-toolchain.mjs requires them to match",
       "matchDepNames": ["node"],
       "groupName": "node runtime"
+    },
+    {
+      "description": "Keep compose.yaml and the CI service container on the same PostgreSQL",
+      "matchDepNames": ["postgres"],
+      "groupName": "postgresql"
     }
   ],
   "lockFileMaintenance": {

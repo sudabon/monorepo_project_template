@@ -200,9 +200,13 @@ components:
           type: string
           minLength: 1
           maxLength: 100
+          pattern: '^[^\x00]*$'
+          description: Does not contain the NUL character (U+0000).
         description:
           type: string
           maxLength: 2000
+          pattern: '^[^\x00]*$'
+          description: Does not contain the NUL character (U+0000).
         createdAt:
           type: string
           format: date-time
@@ -217,9 +221,13 @@ components:
           type: string
           minLength: 1
           maxLength: 100
+          pattern: '^[^\x00]*$'
+          description: NUL (U+0000) is not allowed. Requests containing it receive a 422 field validation error.
         description:
           type: string
           maxLength: 2000
+          pattern: '^[^\x00]*$'
+          description: NUL (U+0000) is not allowed. Requests containing it receive a 422 field validation error.
           default: ''
     ItemPage:
       type: object

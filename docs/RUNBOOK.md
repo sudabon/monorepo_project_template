@@ -7,10 +7,11 @@ make migrate-up
 make migrate-bff-up
 make run-api
 make run-bff
+make dev-web
 ```
 
-API は `http://localhost:8080/api/items`、BFF は `http://localhost:8081` で待ち受ける。
-ブラウザ向けの呼び出しは BFF 経由にする。DB はローカルの `localhost:55432`。
+API は `http://localhost:8080/api/items`、BFF は `http://localhost:8081`、SPA は Vite の開発サーバ（既定 `http://localhost:5173`）で待ち受ける。
+`/api` と `/auth` は Vite が BFF へプロキシする。ブラウザ向けの呼び出しは BFF 経由にする。DB はローカルの `localhost:55432`。
 開発用のユーザ・パスワード・DB 名は `template`。BFF のデモログインは `demo` / `demo`。
 停止は各プロセスに Ctrl-C、DB に `make db-stop`。DB の volume は保持される。
 直前の migration を戻すコマンドは `make migrate-down` / `make migrate-bff-down`。
@@ -53,6 +54,13 @@ make test-go     # 実 DB の CRUD/validation、migration、SIGTERM、ログ捕�
 make test        # Go と TypeScript のテスト
 make check      # 整形、lint、生成差分、テスト、build、E2E 計画ガード
 ```
+
+## SPA の監視サービス差し込み
+
+最上位の ErrorBoundary は捕捉した例外を `apps/web/src/monitoring/reportError.ts` の
+`reportError` に渡す。既定実装は何も送信しない。Sentry や Datadog を足すときは
+`setErrorReporter` に送信関数を渡し、PII を送らないこと。詳細は
+[apps/web/AGENTS.md](../apps/web/AGENTS.md)。
 
 認証は BFF が担当する。API は信頼できる内部ネットワークに置く。
 BFF の Cookie 属性・CSRF・セッション寿命は [bff.md](bff.md) を参照。

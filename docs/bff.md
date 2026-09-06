@@ -10,6 +10,7 @@ httpOnly Cookie のセッションだけを使う。API は BFF が付与した 
 
 - SPA の静的ファイルをデフォルトオリジン（S3 等）に置く
 - `/api/*` と `/auth/*` を BFF オリジンへルーティングする
+- `/config.json` は SPA の実行時設定。CloudFront で `Cache-Control: no-cache` にする（[web.md](web.md)）
 - Cookie は `Path=/`、`SameSite=Lax`、`Secure`、`HttpOnly`
 
 同一オリジンなら Lax でも同一サイトの fetch に Cookie が付く。CSRF トークンは

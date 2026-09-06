@@ -16,7 +16,12 @@
 | openapi-fetch | 0.17.0 | 生成型に従う薄い fetch クライアント | 0.x の minor 更新でも返り値・middleware・パスの型推論を確認 |
 | TypeScript | 5.9.3 | openapi-typescript 7.13.0 の peer が 5.x のため、その最新 patch を固定 | 6 / 7 への更新は生成器の peer 対応を待ち、型テストで確認 |
 | TanStack React Query | 5.102.8 | 手書きラッパから型付き options を公開。api-client の peer と開発依存に固定 | options helper、query key の型推論、React peer の対応範囲 |
-| React / @types/react | 19.2.8 / 19.2.18 | Query の開発時 peer と型検証に使用 | React peer と JSX / hook 型の互換性 |
+| React / react-dom / @types/react / @types/react-dom | 19.2.8 / 19.2.8 / 19.2.18 / 19.2.7 | SPA と api-client の Query peer を同じ React 19 系に揃える | React peer と JSX / hook 型の互換性 |
+| Vite / @vitejs/plugin-react | 8.2.2 / 6.1.1 | SPA の開発サーバと静的ビルド。React プラグインは Oxc 系 | 設定スキーマ、プラグイン順序、Node 対応 |
+| TanStack Router / router-plugin | 1.170.32 / 1.168.35 | ファイルベースルーティングと `beforeLoad` の認証ガード。生成物 `routeTree.gen.ts` はコミットする | プラグイン API、生成ファイル、`beforeLoad` のシグネチャ |
+| Tailwind CSS / @tailwindcss/vite | 4.3.3 / 4.3.3 | v4 は Vite プラグインで読み込む。PostCSS 設定は置かない | `@theme inline`、プラグイン指令、ビルド成果物の CSS |
+| react-hook-form / @hookform/resolvers / zod | 7.87.0 / 5.9.1 / 4.5.4 | クライアント検証と契約エラーのフィールドマッピング | resolver の Zod 対応、`setError` の root エラー |
+| Vitest / Testing Library / jsdom | 5.0.0 / 16.3.3（jest-dom 7.0.1、user-event 14.6.7） / 30.0.1 | SPA のユニット・コンポーネントテスト。E2E は Playwright に分けて残す | Vite 連携、jsdom 環境、Testing Library のクエリ |
 | @types/node | 26.4.1 | `node:test` を使う通信テストを `tsc --noEmit` の対象に含めるため。Node.js 26 系に合わせる | Node.js のメジャー更新への追随、DOM lib との global 衝突 |
 | Spectral CLI | 6.16.3 | OAS 推奨ルールと契約固有ルールを pnpm から実行 | 推奨ルールの追加、Node 対応、診断と終了コード |
 | PostgreSQL | 18.3-alpine | ローカルの Compose と CI のサービスコンテナで同じ版を使う | SQL とデータ型の非互換、`pg_isready` の挙動、major 間のダンプ移行手順 |

@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - 'apps/web/**'
-      - 'packages/**'
+      - 'packages/**' # Includes packages/api-client source, generated types, and type tests.
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
@@ -19,7 +19,7 @@ on:
   pull_request:
     paths:
       - 'apps/web/**'
-      - 'packages/**'
+      - 'packages/**' # Includes packages/api-client source, generated types, and type tests.
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
@@ -54,6 +54,6 @@ jobs:
       - run: make setup-web
       - run: make fmt-check-web
       - run: make lint-web
-      - run: make gen-check
+      - run: make gen-check-web
       - run: make test-web
       - run: make build-web

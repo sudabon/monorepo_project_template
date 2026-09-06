@@ -54,6 +54,25 @@ Go 側は Echo 用のサーバインタフェースと型を生成する。TypeS
 
 - フィールド識別子は、クライアントのフォーム項目名と機械的に対応付けられる表現にする（ネストしたフィールドを指せること）
 
+実装時確認: 共通部分は `{ code, message }`、422 は `allOf` で共通部分を参照し、
+`errors: Array<{ field, message }>` を追加する。`field` は JSON のプロパティ名を
+ドットで連結し、配列は `details.0.name` とする。プロパティ名自体にはドットを許さない。
+Phase 4 の react-hook-form と同じパス表現なので、次の変換で機械的に対応できる。
+
+```text
+group errors by field, preserving every message
+for each (field, messages):
+  if field is a known registered form path:
+    setError(field, { type: "server", message: messages.join("\n") })
+  else:
+    append messages to form-wide errors
+display form-wide errors without discarding unknown fields
+```
+
+`name`、`metadata.owner.name`、`details.0.name` のいずれも同じ処理になる。
+未知のフィールドは Phase 4 D7 に従ってフォーム全体に表示する。今回の Item の
+フィールドはフラットだが、エラー形式はネスト・配列を追加しても変更不要と確認した。
+
 ### D5: 差分検出は `make gen && git diff --exit-code` を CI で実行する
 
 生成し忘れを検出する仕組みはこれ 1 つに集約する。生成ツールのバージョンが CI とローカルで異なると偽陽性になるため、生成ツールのバージョンもピンして固定する（Go 側は tools 用の依存管理、TS 側は devDependencies）。

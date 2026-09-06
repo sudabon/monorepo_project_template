@@ -5,11 +5,29 @@ on:
     branches: [main]
     paths:
       - 'api/**'
+      - 'apps/api/go.*'
+      - 'apps/api/internal/generated/**'
+      - 'packages/api-client/**'
+      - 'go.work*'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.node-version'
+      - 'scripts/check-toolchain.mjs'
       - 'Makefile'
       - '.github/workflows/contract.yml'
   pull_request:
     paths:
       - 'api/**'
+      - 'apps/api/go.*'
+      - 'apps/api/internal/generated/**'
+      - 'packages/api-client/**'
+      - 'go.work*'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.node-version'
+      - 'scripts/check-toolchain.mjs'
       - 'Makefile'
       - '.github/workflows/contract.yml'
 
@@ -26,5 +44,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # Phase 1 adds contract lint and generator dependencies to the Make targets.
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: apps/api/go.mod
+          cache: false
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: make setup-web
+      - run: make lint-contract
       - run: make gen-check
+      - run: git diff --exit-code

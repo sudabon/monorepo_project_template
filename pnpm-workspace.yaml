@@ -4,3 +4,7 @@ packages:
 
 engineStrict: true
 saveExact: true
+
+# Spectral's transitive analytics installer is unnecessary for contract checks.
+allowBuilds:
+  '@scarf/scarf': false

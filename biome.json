@@ -4,6 +4,7 @@
     "includes": [
       "apps/**",
       "packages/**",
+      "!!packages/api-client/src/generated",
       "scripts/**",
       "tests/**",
       "*.json",

@@ -14,13 +14,15 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/sudabon/monorepo_project_template/apps/bff/internal/identity"
-	"github.com/sudabon/monorepo_project_template/apps/bff/internal/platform/logging"
 	"github.com/sudabon/monorepo_project_template/apps/bff/internal/proxy"
 	"github.com/sudabon/monorepo_project_template/apps/bff/internal/session"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/logging"
 	"uuid"
 )
 
 const CSRFHeader = "X-CSRF-Token"
+
+const maxLoginBody = 8 << 10
 
 type Deps struct {
 	Store        session.Store
@@ -122,8 +124,13 @@ func loadSession(store session.Store) echo.MiddlewareFunc {
 				return next(c)
 			}
 			sess, err := store.Get(c.Request().Context(), cookie.Value)
-			if err != nil {
+			// Only a missing session means "not signed in". A store outage must
+			// surface as 5xx; answering 401 would sign every user out instead.
+			if errors.Is(err, session.ErrNotFound) {
 				return next(c)
+			}
+			if err != nil {
+				return fmt.Errorf("load session: %w", err)
 			}
 			c.SetRequest(c.Request().WithContext(session.WithSession(c.Request().Context(), sess)))
 			return next(c)
@@ -188,8 +195,15 @@ type sessionView struct {
 
 func login(d Deps) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		// The login endpoint is unauthenticated and internet-facing; cap the
+		// body so a large request cannot be read into memory.
+		c.Request().Body = http.MaxBytesReader(c.Response(), c.Request().Body, maxLoginBody)
 		var req loginRequest
 		if err := c.Bind(&req); err != nil {
+			var tooLarge *http.MaxBytesError
+			if errors.As(err, &tooLarge) {
+				return echo.NewHTTPError(http.StatusRequestEntityTooLarge)
+			}
 			return echo.NewHTTPError(http.StatusBadRequest)
 		}
 		user, err := d.Users.Authenticate(c.Request().Context(), req.Username, req.Password)
@@ -256,6 +270,8 @@ func handleError(err error, c echo.Context) {
 			code = "unauthenticated"
 		case http.StatusForbidden:
 			code = "csrf_rejected"
+		case http.StatusRequestEntityTooLarge:
+			code = "payload_too_large"
 		default:
 			code = "request_error"
 		}

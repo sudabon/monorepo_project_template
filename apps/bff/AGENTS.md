@@ -12,6 +12,8 @@
   削除してからセッションのユーザ ID を設定し、`X-Request-ID` を付ける。
 - `cmd/bff`: 設定と DI。`cmd/migrate` は goose（version テーブル
   `bff_goose_db_version`）。起動時に自動 migrate しない。
+  ログ・shutdown・DB プールは `packages/go-platform` を使い、API と共有する
+  （[ADR 0006](../../docs/adr/0006-shared-go-platform-module.md)）。
 - `internal/testdb`: 統合テスト専用。production からの依存は禁止。
 
 Cookie と同一オリジン配信の前提は [docs/bff.md](../../docs/bff.md)。

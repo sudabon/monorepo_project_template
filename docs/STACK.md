@@ -69,6 +69,9 @@ GOTOOLCHAIN の導出をこのスクリプト 1 か所に閉じる。サーバ�
 `apps/bff/` にあり、層の責務は [apps/api/AGENTS.md](../apps/api/AGENTS.md) と
 [apps/bff/AGENTS.md](../apps/bff/AGENTS.md) に置く。BFF のセッションは API と同じ
 PostgreSQL を goose で管理する。選定理由は [ADR 0004](adr/0004-bff-session-store.md)。
+構造化ログ・graceful shutdown・DB 接続プールは `packages/go-platform` の共有モジュールに
+置き、両サービスが import する。`go.work` に登録し、各 `go.mod` の `replace` で
+workspace 外でも解決できるようにする。判断は [ADR 0006](adr/0006-shared-go-platform-module.md)。
 `packages/api-client` の型検証は `src` と `tests` の両方を対象にする。
 
 アプリケーションは `@monorepo-project-template/api-client` の package entry から

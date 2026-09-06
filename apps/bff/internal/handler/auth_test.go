@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sudabon/monorepo_project_template/apps/bff/internal/platform/logging"
 	"github.com/sudabon/monorepo_project_template/apps/bff/internal/session"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/logging"
 )
 
 func TestLoginSetsHttpOnlySecureLaxCookie(t *testing.T) {

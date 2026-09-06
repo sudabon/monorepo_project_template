@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/platform/database"
 	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/database"
 )
 
 func Open(t *testing.T) *sql.DB {

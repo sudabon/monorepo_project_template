@@ -7,11 +7,11 @@ import (
 	"os"
 
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/handler"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/platform/database"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/platform/logging"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/platform/server"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/repository"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/usecase"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/database"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/logging"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/server"
 )
 
 func run() error {

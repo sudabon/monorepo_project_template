@@ -5,14 +5,14 @@ allow:
   deepScan: false
 excludeFiles:
   - '^.*_test\.go$'
+vendors:
+  # Shared runtime plumbing lives in its own module; see docs/adr/0006.
+  platform: {in: github.com/sudabon/monorepo_project_template/packages/go-platform/**}
 components:
   session: {in: internal/session/**}
   identity: {in: internal/identity/**}
   handler: {in: internal/handler/**}
   proxy: {in: internal/proxy/**}
-  database: {in: internal/platform/database/**}
-  logging: {in: internal/platform/logging/**}
-  server: {in: internal/platform/server/**}
   migrations: {in: migrations/**}
   testdb: {in: internal/testdb/**}
   main: {in: cmd/**}
@@ -22,21 +22,17 @@ deps:
   identity:
     mayDependOn: [identity]
   handler:
-    mayDependOn: [session, identity, proxy, logging]
+    mayDependOn: [session, identity, proxy]
     anyVendorDeps: true
+  # The proxy stays narrow: the session, the shared logger, and nothing else.
   proxy:
-    mayDependOn: [session, logging]
-  database:
-    anyVendorDeps: true
-  logging:
-    mayDependOn: [logging]
-  server:
-    mayDependOn: [server]
+    mayDependOn: [session]
+    canUse: [platform]
   migrations:
     anyVendorDeps: true
   testdb:
-    mayDependOn: [database, migrations]
+    mayDependOn: [migrations]
     anyVendorDeps: true
   main:
-    mayDependOn: [handler, identity, session, database, logging, server, migrations]
+    mayDependOn: [handler, identity, session, migrations]
     anyVendorDeps: true

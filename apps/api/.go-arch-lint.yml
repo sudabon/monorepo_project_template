@@ -7,15 +7,15 @@ allow:
   deepScan: false
 excludeFiles:
   - '^.*_test\.go$'
+vendors:
+  # Shared runtime plumbing lives in its own module; see docs/adr/0006.
+  platform: {in: github.com/sudabon/monorepo_project_template/packages/go-platform/**}
 components:
   domain: {in: internal/domain/**}
   usecase: {in: internal/usecase/**}
   repository: {in: internal/repository/**}
   handler: {in: internal/handler/**}
   generated: {in: internal/generated/**}
-  database: {in: internal/platform/database/**}
-  logging: {in: internal/platform/logging/**}
-  server: {in: internal/platform/server/**}
   migrations: {in: migrations/**}
   testdb: {in: internal/testdb/**}
   main: {in: cmd/**}
@@ -27,21 +27,15 @@ deps:
   repository:
     mayDependOn: [domain]
   handler:
-    mayDependOn: [domain, usecase, generated, logging]
+    mayDependOn: [domain, usecase, generated]
     anyVendorDeps: true
   generated:
     anyVendorDeps: true
-  database:
-    anyVendorDeps: true
-  logging:
-    anyVendorDeps: true
-  server:
-    mayDependOn: [server]
   migrations:
     anyVendorDeps: true
   testdb:
-    mayDependOn: [database, migrations]
+    mayDependOn: [migrations]
     anyVendorDeps: true
   main:
-    mayDependOn: [handler, usecase, repository, database, logging, server, migrations]
+    mayDependOn: [handler, usecase, repository, migrations]
     anyVendorDeps: true

@@ -75,7 +75,7 @@ BFF は `http://127.0.0.1:8081`。API は `http://127.0.0.1:8080`。
 ```sh
 curl -sS -D - -o /tmp/login.json -X POST http://127.0.0.1:8081/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"demo","password":"secret"}'
+  -d '{"username":"demo","password":"demo"}'
 # Set-Cookie の session_id を Cookie ヘッダで送り直す（Secure を HTTP で確認するため）
 curl -sS -o /dev/null -w '%{http_code}\n' \
   -H "Cookie: session_id=<value>" http://127.0.0.1:8081/api/items

@@ -9,7 +9,8 @@
 - `internal/handler`: 生成された `ServerInterface`、入力検証、生成型と domain 型の変換、
   HTTP ステータスと契約のエラー形式への変換。具象 repository を import しない。
 - `cmd/api`: 設定、DB、repository、usecase、handler の DI とプロセス起動。
-  `internal/platform`: DB プール、context 対応 slog、シグナルと終了処理。
+  DB プール、context 対応 slog、シグナルと終了処理は `packages/go-platform`
+  の共有モジュールを使う。BFF と同じ実装であり、複製しない（[ADR 0006](../../docs/adr/0006-shared-go-platform-module.md)）。
 - `migrations`: goose の SQL Up / Down。`cmd/migrate` で実行し、API 起動で自動適用しない。
 - `internal/testdb`: 統合テスト専用。production からの依存は禁止。
 

@@ -25,20 +25,20 @@
 - [x] 4.3 `openapi-fetch` を用いた型付きクライアントを構成し、パスとメソッドの誤りが型エラーになることを型テストで確認する
 - [ ] 4.4 TanStack Query の `queryOptions` を返す手書きラッパをサンプルリソースの各操作に対して実装し、パラメータとレスポンスが生成型で型付けされることを型テストで確認する
 - [ ] 4.5 ラッパにリトライ方針やエラーハンドリングを持ち込んでいないことをレビューで確認する(それらは Phase 4 の QueryClient の責務)
-- [ ] 4.6 `biome.json` の `files.includes` から TypeScript 生成物のパスを除外し、生成物が未整形でも `make fmt-check-web` が通ること、および `make fmt` 実行後に `make gen-check` が差分なしで通ることを確認する(整形と生成の冪等性が衝突しないこと)
+- [x] 4.6 `biome.json` の `files.includes` から TypeScript 生成物のパスを除外し、生成物が未整形でも `make fmt-check-web` が通ること、および `make fmt` 実行後に `make gen-check` が差分なしで通ることを確認する(整形と生成の冪等性が衝突しないこと)
 
 ## 5. 生成パイプラインと CI
 
 - [x] 5.1 `Makefile` の `gen` ターゲットに Go 側と TypeScript 側の生成処理を実装し、`make gen` が両方を実行することを確認する
-- [ ] 5.2 `make gen` を 2 回連続で実行して `git diff --exit-code` が成功する(冪等である)ことを確認する
+- [x] 5.2 `make gen` を 2 回連続で実行して `git diff --exit-code` が成功する(冪等である)ことを確認する
 - [x] 5.3 `.github/workflows/contract.yml` に契約 lint と `make gen && git diff --exit-code` を追加し、`api/` 変更時に実行されることを確認する
 - [x] 5.4 `.github/workflows/web.yml` のパスフィルタに `packages/api-client` を追加し、当該パスの変更で TypeScript 側ジョブが起動することを確認する
-- [ ] 5.5 仕様だけを変更して生成物を更新しない検証用 PR で CI が失敗し、生成物を更新すると成功することを CI 実行履歴で確認する
+- [x] 5.5 仕様だけを変更して生成物を更新しない検証用 PR で CI が失敗し、生成物を更新すると成功することを CI 実行履歴で確認する
 
 ## 6. 完了条件の検証
 
-- [ ] 6.1 `api/openapi.yaml` にフィールドを 1 つ追加して `make gen` を実行し、Go と TypeScript の両方の生成物に反映されることを差分で確認する
-- [ ] 6.2 `make check` が成功することを確認する
+- [x] 6.1 `api/openapi.yaml` にフィールドを 1 つ追加して `make gen` を実行し、Go と TypeScript の両方の生成物に反映されることを差分で確認する
+- [x] 6.2 `make check` が成功することを確認する
 - [x] 6.3 採用した生成ツールとそのバージョン・選定理由・次のメジャーで壊れそうな点を `docs/STACK.md` に追記する
 
 ## E2Eテスト実装タスク(必須)

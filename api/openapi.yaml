@@ -193,6 +193,9 @@ components:
       type: object
       required: [id, name, description, createdAt, updatedAt]
       properties:
+        contractProbe:
+          type: string
+          description: Temporary field used only to verify generated drift detection.
         id:
           type: string
           format: uuid

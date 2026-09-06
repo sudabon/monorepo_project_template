@@ -22,6 +22,11 @@
 - Go subprocess テストで実 SIGTERM の drain / 待機上限を検証。
 - レビュー指摘の応答書き込み失敗を再現し、ERROR ログと request_id を検証する
   テストの失敗を確認後に修正。再実行と scoped 再レビューで解消を確認。
+- [PR #6](https://github.com/sudabon/monorepo_project_template/pull/6) の
+  [Go CI](https://github.com/sudabon/monorepo_project_template/actions/runs/34022732951) が成功。
+  commit `963461d` で PostgreSQL サービスを起動し、`make test`、lint、生成差分、build が
+  すべて成功した。契約 / Web / E2E 計画ガード / Renovate も同じ commit で成功。
+  初回 CI で検出した DB ヘルスチェックコマンドの引用符を修正後に再実行した。
 
 2026-09-06 のユーザ承認に基づき、OpenAPI の Item / ItemInput の name / description に
 NUL 禁止の pattern と 422 の説明を追加し、Go / TypeScript を再生成した。
@@ -31,10 +36,8 @@ POST / PUT の単一・複数フィールド拒否、他の制約との集約、
 変わらないことを検証した。通常の改行と文字列としての `\u0000` の保存・取得も成功。
 E2E は tasks.md の指定に従い対象外。`test-plan.md` は追加していない。
 
-## 未完了・制約
+## 制約
 
-- GitHub Actions 上での実行は未確認。workflow に PostgreSQL サービスと
-  `make test` を追加済みだが、push / PR は行っていないため task 6.1 は未完了。
 - NUL 入力は承認済みの追加制約として 422 で拒否する。未解決の `TODO(template)` は 0 件。
 - offset pagination はリクエスト間の挿入・削除に対する snapshot 維持を保証しない。
   契約どおりの offset 方式であり、同一応答の total / items は同じ snapshot。

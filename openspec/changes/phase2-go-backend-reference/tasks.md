@@ -41,7 +41,7 @@
 
 ## 6. CI と完了条件の検証
 
-- [ ] 6.1 `.github/workflows/go.yml` に DB を伴う統合テストの実行環境を追加し、CI で `make test` が成功することを確認する
+- [x] 6.1 `.github/workflows/go.yml` に DB を伴う統合テストの実行環境を追加し、CI で `make test` が成功することを確認する
 - [x] 6.2 `make check` が全て通ることを確認する
 - [x] 6.3 ローカルで起動し、サンプルリソースの CRUD を curl で一通り実行できることを確認する
 - [x] 6.4 妥協した実装に `// TODO(template):` を付け、一覧を報告に含める

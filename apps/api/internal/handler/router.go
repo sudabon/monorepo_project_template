@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	"github.com/google/uuid"
@@ -56,7 +57,9 @@ func traceRequest(next echo.HandlerFunc) echo.HandlerFunc {
 		start := time.Now()
 		defer func() {
 			if recovered := recover(); recovered != nil {
-				err = fmt.Errorf("request panic: %v", recovered)
+				// Keep the panic site in the error so the 500 log names it.
+				// handleError never puts the error text in the response body.
+				err = fmt.Errorf("request panic: %v\n%s", recovered, debug.Stack())
 			}
 			if err != nil {
 				c.Error(err)

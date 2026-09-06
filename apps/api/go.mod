@@ -3,6 +3,7 @@ module github.com/sudabon/monorepo_project_template/apps/api
 go 1.27.1
 
 require (
+	github.com/getkin/kin-openapi v0.142.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/labstack/echo/v4 v4.15.4
@@ -23,7 +24,6 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fe3dback/go-arch-lint v1.18.0 // indirect
 	github.com/fe3dback/go-yaml v1.14.0 // indirect
-	github.com/getkin/kin-openapi v0.142.0 // indirect
 	github.com/go-openapi/jsonpointer v0.23.1 // indirect
 	github.com/go-openapi/swag/jsonname v0.26.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect

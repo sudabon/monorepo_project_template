@@ -36,6 +36,34 @@ POST / PUT の単一・複数フィールド拒否、他の制約との集約、
 変わらないことを検証した。通常の改行と文字列としての `\u0000` の保存・取得も成功。
 E2E は tasks.md の指定に従い対象外。`test-plan.md` は追加していない。
 
+## レビュー指摘の修正 (2026-09-06)
+
+[PR #6 のレビュー](https://github.com/sudabon/monorepo_project_template/pull/6#issuecomment-5558179439)
+の Should Fix 5 件を修正した。
+
+- **S-1** `.github/workflows/go.yml` の `make test` を `make test-go` に戻し、
+  `pnpm/action-setup` / `setup-node` / `make setup-web` を削除した。`make -n test` が
+  `pnpm run test` を含むため、Go だけの変更で Web のテストが二重に走っていた。
+  ADR 0001 の言語別分離と `docs/STACK.md` の記述に戻した。`apps/api/AGENTS.md` も更新。
+- **S-2** `docs/STACK.md` に PostgreSQL 18.3-alpine / pgx 5.10.0 / goose 3.28.0 /
+  go-arch-lint 1.18.0 / google/uuid 1.6.0 を追記し、「サーバ実装は Phase 2 で追加する」
+  の陳腐化した記述を差し替えた。CI と DB の実行方法も追記。
+- **S-3** `renovate.json` の `enabledManagers` に `docker-compose` を追加し、
+  `compose.yaml` と `go.yml` の PostgreSQL を 1 つの PR にまとめる packageRule を足した。
+  追加前は compose.yaml が更新対象外で、CI 側だけ版が上がる状態だった。
+  `make validate-renovate` が成功。
+- **S-4** `apps/api/go.mod` を tidy し、`contract_test.go` が直接 import している
+  `github.com/getkin/kin-openapi` を direct 依存に直した。再発防止に
+  `scripts/go-task.sh` の lint へ `go mod tidy -diff` を追加。修正前の go.mod で
+  `make lint-go` 相当が exit 1 になることを確認してから tidy を実行した。
+- **S-5** `internal/handler/router.go` の recover で `debug.Stack()` を error に含め、
+  500 のログに panic 発生箇所が残るようにした。応答本文は従来どおり
+  `internal_error` のみ。回帰テスト `TestPanicIsLoggedWithStackAndHiddenFromResponse`
+  を追加し、スタックを落とした実装では `panic log lost the stack` で失敗することを
+  確認してから修正版で成功させた。
+
+修正後に `make check` の全通過を確認した。
+
 ## 制約
 
 - NUL 入力は承認済みの追加制約として 422 で拒否する。未解決の `TODO(template)` は 0 件。

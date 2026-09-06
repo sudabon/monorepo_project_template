@@ -8,8 +8,10 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/sudabon/monorepo_project_template/apps/api/internal/generated"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/handler"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/platform/logging"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/repository"
@@ -81,6 +83,45 @@ func TestHealthAndErrorTracingWithUnavailableDB(t *testing.T) {
 func TestShallowDoesNotCallDependencies(t *testing.T) {
 	api := handler.New(nil, func(context.Context) error { t.Fatal("shallow pinged DB"); return nil })
 	request(t, api, "GET", "/health/shallow", "", http.StatusOK)
+}
+
+func TestPanicIsLoggedWithStackAndHiddenFromResponse(t *testing.T) {
+	var logs bytes.Buffer
+	previous := slog.Default()
+	slog.SetDefault(logging.New(&logs))
+	t.Cleanup(func() { slog.SetDefault(previous) })
+	// A nil usecase panics inside the operation, exercising the recover path.
+	api := handler.New(nil, nil)
+	rec := request(t, api, "GET", "/api/items", "", http.StatusInternalServerError)
+	var body generated.Error
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body.Code != "internal_error" || strings.Contains(rec.Body.String(), "panic") {
+		t.Fatalf("response leaked internals: %s", rec.Body)
+	}
+	logged := false
+	for _, line := range bytes.Split(bytes.TrimSpace(logs.Bytes()), []byte("\n")) {
+		var entry map[string]any
+		if err := json.Unmarshal(line, &entry); err != nil {
+			t.Fatal(err)
+		}
+		if entry["level"] != "ERROR" {
+			continue
+		}
+		if entry["request_id"] != rec.Header().Get(logging.RequestIDHeader) {
+			t.Fatalf("panic log is not traceable: %v", entry)
+		}
+		message, _ := entry["error"].(string)
+		// The stack must name the operation that panicked, not just the recover site.
+		if !strings.Contains(message, "request panic:") || !strings.Contains(message, "ListItems") {
+			t.Fatalf("panic log lost the stack: %q", message)
+		}
+		logged = true
+	}
+	if !logged {
+		t.Fatalf("missing panic log: %s", logs.String())
+	}
 }
 
 type failingWriter struct{ *httptest.ResponseRecorder }

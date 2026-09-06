@@ -26,4 +26,5 @@
 検証: `make test-unit` は DB 不要、`make test-go` は実 PostgreSQL と SIGTERM のテストを含む。
 `TEST_DATABASE_URL` を指定しなければ Compose の DB を起動する。
 テスト DB は専用 DB を使い、個々のテストが作った schema のみを削除する。
-CI でも同じ `make test` を実行する。最後に `make check` と `git diff --check` を実行する。
+CI の Go ジョブは `make test-go` だけを実行し、Node.js の実行環境を必要としない。
+最後に `make check` と `git diff --check` を実行する。

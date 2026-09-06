@@ -57,15 +57,8 @@ jobs:
           go-version-file: apps/api/go.mod
           cache: false
       - run: make setup-go
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-      - run: make setup-web
       - run: make fmt-check-go
       - run: make lint-go
       - run: make gen-check-go
-      - run: make test
+      - run: make test-go
       - run: make build-go

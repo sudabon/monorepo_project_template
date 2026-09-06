@@ -65,6 +65,8 @@ while IFS= read -r module; do
       case "$task" in
         lint)
           (cd "$module" && go vet ./...)
+          # Keep direct/indirect accurate so dependency PRs carry no extra go.mod diff.
+          (cd "$module" && go mod tidy -diff)
           if [ -f "$module/.go-arch-lint.yml" ]; then
             (cd "$module" && go tool go-arch-lint check)
           fi

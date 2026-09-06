@@ -42,11 +42,13 @@ type FieldError struct {
 
 // Item defines model for Item.
 type Item struct {
-	CreatedAt   time.Time          `json:"createdAt"`
-	Description string             `json:"description"`
-	Id          openapi_types.UUID `json:"id"`
-	Name        string             `json:"name"`
-	UpdatedAt   time.Time          `json:"updatedAt"`
+	// ContractProbe Temporary field used only to verify generated drift detection.
+	ContractProbe *string            `json:"contractProbe,omitempty"`
+	CreatedAt     time.Time          `json:"createdAt"`
+	Description   string             `json:"description"`
+	Id            openapi_types.UUID `json:"id"`
+	Name          string             `json:"name"`
+	UpdatedAt     time.Time          `json:"updatedAt"`
 }
 
 // ItemInput defines model for ItemInput.

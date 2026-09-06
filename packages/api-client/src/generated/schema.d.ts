@@ -64,6 +64,8 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Item: {
+            /** @description Temporary field used only to verify generated drift detection. */
+            contractProbe?: string;
             /** Format: uuid */
             id: string;
             name: string;

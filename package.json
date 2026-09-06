@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.12",
+    "@playwright/test": "1.63.0",
     "@stoplight/spectral-cli": "6.16.3",
     "openapi-typescript": "7.13.0",
     "typescript": "5.9.3"

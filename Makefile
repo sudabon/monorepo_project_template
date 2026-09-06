@@ -19,7 +19,7 @@ RENOVATE_NODE_MAJOR := 24
 .PHONY: setup setup-go setup-web gen gen-go gen-web gen-check gen-check-go gen-check-web fmt fmt-go fmt-web fmt-check \
 	fmt-check-go fmt-check-web lint lint-go lint-web test test-go test-web \
 		test-toolchain lint-contract build build-go build-web check check-test-plan validate-renovate \
-		dev-web typecheck-web
+		dev-web typecheck-web e2e e2e-serve
 
 .PHONY: db-up db-stop migrate-up migrate-down migrate-bff-up migrate-bff-down run-api run-bff test-unit
 
@@ -62,6 +62,12 @@ setup-web:
 
 dev-web:
 	$(PNPM) --filter @monorepo-project-template/web dev
+
+e2e-serve: db-up migrate-up migrate-bff-up
+	$(NODE) scripts/e2e-serve.mjs
+
+e2e:
+	$(PNPM) exec playwright test
 
 typecheck-web:
 	$(PNPM) --filter @monorepo-project-template/web typecheck

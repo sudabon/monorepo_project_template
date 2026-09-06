@@ -24,6 +24,7 @@ make check
 | 3 | サンプルリソース名 | OpenAPI の `items` / `Item` / `listItems`、テーブル `items`、`createItemQueries` | `api/openapi.yaml`、`apps/api`、`packages/api-client`、`apps/web`、`tests/e2e`。案件の最初のリソースに置き、`make gen` する |
 | 4 | CI のシークレット名 | 現状 workflow に `secrets.*` 参照はない。サービスコンテナと Make の DB 認証はユーザ / パスワード / DB 名とも `template` | シークレットを足したら GitHub Secrets 名とこの表を案件名に合わせる。`.github/workflows/go.yml` の `POSTGRES_*`、`Makefile` の `DATABASE_URL`、`compose.yaml`、`scripts/go-task.sh` の `template` も変える |
 | 5 | テンプレート専用ガードの解除 | `.openspec-e2e-kit.json` の `"templateRepo": true` | **キーごと削除する**（`false` でもガードは有効になるが、テンプレート由来の設定は残さない） |
+| 6 | 認証の実装 | BFF のデモユーザ（`apps/bff/internal/identity/static.go` の `Static`、`BFF_DEMO_USERNAME` / `BFF_DEMO_PASSWORD`） | 案件の IdP かユーザストアに差し替える。**差し替えないと、静的なデモユーザだけで認証が通る状態のまま本番に出る。** `Makefile` の `run-bff` と `scripts/e2e-serve.mjs` が渡している値も消す |
 
 合わせて次も直す。
 
@@ -54,7 +55,17 @@ rg -n --hidden \
 
 ヒットが 0 件であること。`templateRepo` を消さずにこの検索を実行すると `.openspec-e2e-kit.json` が検出される。
 
+作者向けファイルの削除は内容検索に掛からないため、別に確認する。
+
+```sh
+test ! -f monorepo-project-template-instructions.md && echo OK
+```
+
 続けて `make setup && make check` が成功すること。
+
+チェックリスト 6（認証）は機械的に検出できない。`apps/bff/internal/identity/static.go` に
+`TODO(template)` が残っていれば未対応である。残りの `TODO(template)` は
+[docs/TEMPLATE_TODO.md](docs/TEMPLATE_TODO.md) を参照する。
 
 ## ドキュメント
 
@@ -65,6 +76,7 @@ rg -n --hidden \
 | 起動・障害・依存更新・DB | [docs/RUNBOOK.md](docs/RUNBOOK.md) |
 | SPA の実行時設定と静的配信 | [docs/web.md](docs/web.md) |
 | BFF の Cookie・同一オリジン前提 | [docs/bff.md](docs/bff.md) |
+| 未完了の妥協点（`TODO(template)`） | [docs/TEMPLATE_TODO.md](docs/TEMPLATE_TODO.md) |
 | 設計判断 | [docs/adr/](docs/adr/README.md) |
 | Coding Agent 向け指示 | [AGENTS.md](AGENTS.md) |
 

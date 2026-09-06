@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-task="${1:?usage: go-task.sh <setup|fmt|fmt-check|lint|test|build>}"
+task="${1:?usage: go-task.sh <setup|gen|fmt|fmt-check|lint|test|build>}"
 expected=$(awk '$1 == "go" { print $2 }' go.work)
 toolchain=$expected
 case $expected in
@@ -13,6 +13,14 @@ case $expected in
     ;;
 esac
 export GOTOOLCHAIN="go$toolchain"
+
+# Generation runs before the module loop: only apps/api holds the contract tool,
+# and routing it here keeps GOTOOLCHAIN derived in exactly one place.
+if [ "$task" = gen ]; then
+  exec go -C apps/api tool oapi-codegen \
+    -config ../../api/oapi-codegen.yaml ../../api/openapi.yaml
+fi
+
 gofmt_bin="$(go env GOROOT)/bin/gofmt"
 
 modules=$(go list -m -f '{{if .Main}}{{.Dir}}{{end}}')

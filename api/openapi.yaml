@@ -1,0 +1,283 @@
+openapi: 3.0.3
+info:
+  title: Monorepo template API
+  version: 1.0.0
+  description: Contract shared by the Go API and TypeScript client.
+servers:
+  - url: /api
+tags:
+  - name: items
+    description: Sample resource operations.
+paths:
+  /items:
+    get:
+      operationId: listItems
+      tags: [items]
+      summary: List items
+      description: Return a page of items ordered by createdAt descending, then id ascending.
+      parameters:
+        - name: page
+          in: query
+          description: One-based page number. Pages beyond the last page return an empty items array.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Maximum number of items per page.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: A page of items and the total matching count.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    post:
+      operationId: createItem
+      tags: [items]
+      summary: Create an item
+      description: Create a sample resource with a server-assigned identifier and timestamps.
+      requestBody:
+        $ref: '#/components/requestBodies/ItemInput'
+      responses:
+        '201':
+          description: The created item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /items/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ItemId'
+    get:
+      operationId: getItem
+      tags: [items]
+      summary: Get an item
+      description: Return one item by its identifier.
+      responses:
+        '200':
+          description: The requested item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    put:
+      operationId: updateItem
+      tags: [items]
+      summary: Update an item
+      description: Replace the writable fields. An omitted description is cleared to an empty string.
+      requestBody:
+        $ref: '#/components/requestBodies/ItemInput'
+      responses:
+        '200':
+          description: The updated item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    delete:
+      operationId: deleteItem
+      tags: [items]
+      summary: Delete an item
+      description: Delete one item by its identifier.
+      responses:
+        '204':
+          description: The item was deleted. No response body.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+components:
+  parameters:
+    ItemId:
+      name: id
+      in: path
+      required: true
+      description: Server-assigned item identifier.
+      schema:
+        type: string
+        format: uuid
+  requestBodies:
+    ItemInput:
+      required: true
+      description: Writable item fields.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ItemInput'
+  responses:
+    BadRequest:
+      description: Malformed request, identifier, or pagination parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication is required or the session has expired.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No item exists with the requested identifier.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnexpectedError:
+      description: An error using the shared error envelope.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Well-formed input failed field validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          example:
+            code: validation_error
+            message: Some fields are invalid.
+            errors:
+              - field: name
+                message: Name must not be empty.
+              - field: description
+                message: Description must be at most 2000 characters.
+  schemas:
+    Item:
+      type: object
+      required: [id, name, description, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 2000
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ItemInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 2000
+          default: ''
+    ItemPage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+        page:
+          type: integer
+          format: int32
+          minimum: 1
+        pageSize:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 9007199254740991
+          description: Total matching items, bounded by JavaScript's maximum safe integer.
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code. Clients must tolerate unknown codes.
+          example: not_found
+        message:
+          type: string
+          description: Human-readable explanation.
+          example: Item not found.
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/FieldError'
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          minLength: 1
+          description: >-
+            Dot-separated JSON field path; array indices are decimal segments
+            (for example details.0.name). Property names cannot contain dots.
+          example: metadata.owner.name
+        message:
+          type: string
+          example: Name must not be empty.

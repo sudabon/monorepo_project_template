@@ -135,7 +135,7 @@ monorepo_project_template/
 
 - clone 直後に `make setup && make check` が成功する
 - CI が全ジョブ緑になる
-- Go だけを変更した PR で TS 側のジョブが走らないことを確認できる
+- Go だけを変更した PR で、TS の単体検証とビルドを行う Web ジョブが走らないことを確認できる（ブラウザ E2E は Go を貫通するため走る。[ADR 0001](docs/adr/0001-ci-path-filters.md)）
 
 ---
 

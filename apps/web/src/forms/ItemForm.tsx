@@ -10,12 +10,16 @@ const itemFields = new Set(['name', 'description']);
 
 type Props = {
   submit: (values: ItemInputValues) => Promise<void>;
+  defaultValues?: ItemInputValues;
 };
 
-export function ItemForm({ submit }: Props) {
+export function ItemForm({
+  submit,
+  defaultValues = { name: '', description: '' },
+}: Props) {
   const form = useForm<ItemInputValues>({
     resolver: zodResolver(itemInputSchema),
-    defaultValues: { name: '', description: '' },
+    defaultValues,
   });
   const {
     register,

@@ -9,8 +9,12 @@ import { sessionQueryKey } from '../auth/session.ts';
 
 export function createAuthedFetch(queryClient: QueryClient): typeof fetch {
   return (input, init) => {
-    const headers = new Headers(init?.headers);
-    const method = (init?.method ?? 'GET').toUpperCase();
+    const headers = new Headers(
+      init?.headers ?? (input instanceof Request ? input.headers : undefined),
+    );
+    const method = (
+      init?.method ?? (input instanceof Request ? input.method : 'GET')
+    ).toUpperCase();
     if (
       method === 'POST' ||
       method === 'PUT' ||

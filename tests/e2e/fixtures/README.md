@@ -7,8 +7,11 @@ test-plan.md の「前提(fixture)」列に書いた fixture 名は、必ずこ�
 
 | fixture 名 | 作られる状態 | 使用する TP-ID | 方式 |
 |-----------|-------------|---------------|------|
-| `seed:user-with-one-order` | 有効な一般ユーザー1名 + 支払い済み注文1件 | TP-001, TP-004 | シードAPI |
-|  |  |  |  |
+| `authenticated-user` | デモユーザ (`demo` / `demo`) でログイン済み。保護ルートを開ける | TP-001〜TP-007 | fixture 直接（ログイン画面操作） |
+| `sample-resources-multi-page` | 一意プレフィックス付きのサンプルリソース 21 件。既定 pageSize=20 で 2 ページ目が存在する | TP-006, TP-007 | fixture 直接（認証済み API `POST /api/items`） |
+
+`authenticated-user` は auto fixture のため、テスト本体にログイン操作を書かない。
+`sample-resources-multi-page` は `authenticated-user` のあとに API で投入する。
 
 ## 方式について
 
@@ -20,3 +23,6 @@ test-plan.md の「前提(fixture)」列に書いた fixture 名は、必ずこ�
 
 どちらの方式でも、fixture は各テストの前に**べき等に**状態を作り直し、テスト間で状態を
 共有しないこと(順序依存の禁止は `docs/E2E_CONVENTIONS.md` を参照)。
+
+テンプレートにはシードAPIが無いため、本フェーズの fixture はログイン UI と公開 CRUD API
+で状態を作る。案件でシードAPIを足したら、この表の方式列を更新する。

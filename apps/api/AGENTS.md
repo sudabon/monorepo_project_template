@@ -21,7 +21,9 @@
 
 リクエストに関連するログは必ず `slog.InfoContext(ctx, ...)` 等を使い、
 `X-Request-ID` を保持した context を DB/ダウンストリームにも渡す。
-認証は後続フェーズの BFF が担当する。API を直接インターネットに公開しない。
+認証は BFF が担当する。API を直接インターネットに公開しない。
+BFF が付ける `X-User-ID` はネットワーク境界を信頼する。クライアント由来の
+同名ヘッダを API が信用してはならない。
 
 検証: `make test-unit` は DB 不要、`make test-go` は実 PostgreSQL と SIGTERM のテストを含む。
 `TEST_DATABASE_URL` を指定しなければ Compose の DB を起動する。

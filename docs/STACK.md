@@ -10,7 +10,7 @@
 | pnpm | 11.25.0 | 最新安定版。workspace と単一 lockfile を利用し、`packageManager` で固定 | lockfile 形式、設定キー、依存のビルドスクリプト実行方針 |
 | Biome | 2.5.12 | TypeScript の formatter と linter を開発依存 1 つで提供 | 設定スキーマ、推奨ルール、整形結果の変更 |
 | oapi-codegen | 2.8.0 | `apps/api/go.mod` の tool directive で固定し、Echo の通常・strict インタフェースと型を生成 | 設定スキーマ、生成インタフェース、Echo / runtime の対応範囲 |
-| Echo | 4.15.4 | `echo-server` が生成する v4 インタフェースの実行時依存 | v5 は生成設定と handler の同時移行が必要 |
+| Echo | 4.15.4 | API の生成サーバと BFF の実行時依存 | v5 は生成設定と handler の同時移行が必要 |
 | oapi-codegen/runtime | 1.7.0 | 生成されたパラメータ・strict middleware の共通処理 | バインド処理と strict handler のシグネチャ |
 | openapi-typescript | 7.13.0 | 読める型定義だけを生成し、実行時コードを増やさない | OpenAPI の解釈、生成型名、TypeScript peer の対応範囲 |
 | openapi-fetch | 0.17.0 | 生成型に従う薄い fetch クライアント | 0.x の minor 更新でも返り値・middleware・パスの型推論を確認 |
@@ -65,8 +65,10 @@ Contract CI は両方の実行環境を用意し、lint と `make gen-check`、
 TypeScript の生成物 `packages/api-client/src/generated/` は Biome の対象外。
 生成型を手編集せず、契約を修正して `make gen` を再実行する。
 Go の生成先は `apps/api/internal/generated/`。生成は `scripts/go-task.sh gen` 経由で行い、
-GOTOOLCHAIN の導出をこのスクリプト 1 か所に閉じる。サーバ実装は `apps/api/` にあり、
-層の責務と依存方向は [apps/api/AGENTS.md](../apps/api/AGENTS.md) に置く。
+GOTOOLCHAIN の導出をこのスクリプト 1 か所に閉じる。サーバ実装は `apps/api/` と
+`apps/bff/` にあり、層の責務は [apps/api/AGENTS.md](../apps/api/AGENTS.md) と
+[apps/bff/AGENTS.md](../apps/bff/AGENTS.md) に置く。BFF のセッションは API と同じ
+PostgreSQL を goose で管理する。選定理由は [ADR 0004](adr/0004-bff-session-store.md)。
 `packages/api-client` の型検証は `src` と `tests` の両方を対象にする。
 
 アプリケーションは `@monorepo-project-template/api-client` の package entry から

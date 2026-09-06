@@ -1,0 +1,42 @@
+version: 3
+workdir: .
+allow:
+  depOnAnyVendor: false
+  deepScan: false
+excludeFiles:
+  - '^.*_test\.go$'
+components:
+  session: {in: internal/session/**}
+  identity: {in: internal/identity/**}
+  handler: {in: internal/handler/**}
+  proxy: {in: internal/proxy/**}
+  database: {in: internal/platform/database/**}
+  logging: {in: internal/platform/logging/**}
+  server: {in: internal/platform/server/**}
+  migrations: {in: migrations/**}
+  testdb: {in: internal/testdb/**}
+  main: {in: cmd/**}
+deps:
+  session:
+    mayDependOn: [session]
+  identity:
+    mayDependOn: [identity]
+  handler:
+    mayDependOn: [session, identity, proxy, logging]
+    anyVendorDeps: true
+  proxy:
+    mayDependOn: [session, logging]
+  database:
+    anyVendorDeps: true
+  logging:
+    mayDependOn: [logging]
+  server:
+    mayDependOn: [server]
+  migrations:
+    anyVendorDeps: true
+  testdb:
+    mayDependOn: [database, migrations]
+    anyVendorDeps: true
+  main:
+    mayDependOn: [handler, identity, session, database, logging, server, migrations]
+    anyVendorDeps: true

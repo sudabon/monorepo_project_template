@@ -20,7 +20,7 @@ RENOVATE_NODE_MAJOR := 24
 	fmt-check-go fmt-check-web lint lint-go lint-web test test-go test-web \
 		test-toolchain lint-contract build build-go build-web check check-test-plan validate-renovate
 
-.PHONY: db-up db-stop migrate-up migrate-down run-api test-unit
+.PHONY: db-up db-stop migrate-up migrate-down migrate-bff-up migrate-bff-down run-api run-bff test-unit
 
 db-up:
 	docker compose up -d --wait postgres
@@ -36,6 +36,16 @@ migrate-down:
 
 run-api:
 	bash scripts/go-task.sh run-api
+
+migrate-bff-up:
+	bash scripts/go-task.sh migrate-bff-up
+
+migrate-bff-down:
+	bash scripts/go-task.sh migrate-bff-down
+
+run-bff:
+	HTTP_ADDR=:8081 BFF_COOKIE_SECURE=false BFF_DEMO_USERNAME=demo BFF_DEMO_PASSWORD=demo BACKEND_URL=http://127.0.0.1:8080 \
+		bash scripts/go-task.sh run-bff
 
 test-unit:
 	bash scripts/go-task.sh test-unit

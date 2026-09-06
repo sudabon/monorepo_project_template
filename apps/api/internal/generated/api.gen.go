@@ -42,17 +42,24 @@ type FieldError struct {
 
 // Item defines model for Item.
 type Item struct {
-	CreatedAt   time.Time          `json:"createdAt"`
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Description Does not contain the NUL character (U+0000).
 	Description string             `json:"description"`
 	Id          openapi_types.UUID `json:"id"`
-	Name        string             `json:"name"`
-	UpdatedAt   time.Time          `json:"updatedAt"`
+
+	// Name Does not contain the NUL character (U+0000).
+	Name      string    `json:"name"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // ItemInput defines model for ItemInput.
 type ItemInput struct {
+	// Description NUL (U+0000) is not allowed. Requests containing it receive a 422 field validation error.
 	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
+
+	// Name NUL (U+0000) is not allowed. Requests containing it receive a 422 field validation error.
+	Name string `json:"name"`
 }
 
 // ItemPage defines model for ItemPage.

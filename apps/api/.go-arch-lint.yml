@@ -1,0 +1,47 @@
+version: 3
+workdir: .
+allow:
+  depOnAnyVendor: false
+  # Enforce imports. Deep scanning treats concrete adapters passed to interfaces
+  # as reverse dependencies, including the composition root and generated Echo DI.
+  deepScan: false
+excludeFiles:
+  - '^.*_test\.go$'
+components:
+  domain: {in: internal/domain/**}
+  usecase: {in: internal/usecase/**}
+  repository: {in: internal/repository/**}
+  handler: {in: internal/handler/**}
+  generated: {in: internal/generated/**}
+  database: {in: internal/platform/database/**}
+  logging: {in: internal/platform/logging/**}
+  server: {in: internal/platform/server/**}
+  migrations: {in: migrations/**}
+  testdb: {in: internal/testdb/**}
+  main: {in: cmd/**}
+deps:
+  domain:
+    mayDependOn: [domain]
+  usecase:
+    mayDependOn: [domain]
+  repository:
+    mayDependOn: [domain]
+  handler:
+    mayDependOn: [domain, usecase, generated, logging]
+    anyVendorDeps: true
+  generated:
+    anyVendorDeps: true
+  database:
+    anyVendorDeps: true
+  logging:
+    anyVendorDeps: true
+  server:
+    mayDependOn: [server]
+  migrations:
+    anyVendorDeps: true
+  testdb:
+    mayDependOn: [database, migrations]
+    anyVendorDeps: true
+  main:
+    mayDependOn: [handler, usecase, repository, database, logging, server, migrations]
+    anyVendorDeps: true

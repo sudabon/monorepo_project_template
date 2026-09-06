@@ -66,7 +66,9 @@ export interface components {
         Item: {
             /** Format: uuid */
             id: string;
+            /** @description Does not contain the NUL character (U+0000). */
             name: string;
+            /** @description Does not contain the NUL character (U+0000). */
             description: string;
             /** Format: date-time */
             createdAt: string;
@@ -74,8 +76,12 @@ export interface components {
             updatedAt: string;
         };
         ItemInput: {
+            /** @description NUL (U+0000) is not allowed. Requests containing it receive a 422 field validation error. */
             name: string;
-            /** @default  */
+            /**
+             * @description NUL (U+0000) is not allowed. Requests containing it receive a 422 field validation error.
+             * @default
+             */
             description?: string;
         };
         ItemPage: {

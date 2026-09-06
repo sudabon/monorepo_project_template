@@ -54,3 +54,21 @@
 リトライ、認証遷移、表示、キャッシュ無効化の方針を持たないことを確認した。
 HTTP エラーは status / body を保持する既存の通信アダプタに通して呼び出し側へ伝える。
 全 25 タスクを完了した。実サーバとの E2E は計画どおり Phase 2 / 5 の検証範囲とする。
+
+## レビュー指摘の修正 (2026-09-06)
+
+PR #5 のレビューで挙がった Should Fix 2 件を修正した。
+
+- `packages/api-client/tests/client.test.ts` が `tsconfig.json` の `include` から漏れており、
+  型検査されていなかった。`@types/node` 26.4.1 を追加して `include` を `["src", "tests"]` に広げ、
+  `assert.rejects` のコールバック引数を `(error: unknown)` にした。`tsc --listFiles` に
+  当該ファイルが現れることと、`items.list({ page: '2' })` を一時的に追加すると
+  TS2322 で失敗することを確認した。DOM lib と `@types/node` の global 衝突は発生しない。
+- `Makefile` の `gen-go` が GOTOOLCHAIN の導出を `scripts/go-task.sh` から複製しており、
+  `go.work` が `X.Y` 形式のとき `make gen-go` だけが `invalid toolchain` で落ちる状態だった。
+  `go-task.sh` に `gen` タスクを追加して導出を 1 か所に閉じた。`go 1.99` で `go1.99.0` に
+  正規化されること、`go oops` で `must be X.Y or X.Y.Z` として落ちることを確認した。
+  `gen-go` が `go-task.sh` に依存するようになったため、`contract.yml` のパスフィルタに
+  `scripts/go-task.sh` を追加した。
+
+修正後に `make check` と `make gen` を実行し、すべて成功・生成物の差分なしを確認した。

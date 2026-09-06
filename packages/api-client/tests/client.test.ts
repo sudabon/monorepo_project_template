@@ -46,15 +46,18 @@ test('HTTP errors reach the caller with status and shared error body', async () 
       ),
   });
   try {
-    await assert.rejects(cache.fetchQuery(items.get('missing')), (error) => {
-      assert.ok(error instanceof ApiError);
-      assert.equal(error.status, 401);
-      assert.deepEqual(error.body, {
-        code: 'unauthorized',
-        message: 'Session expired.',
-      });
-      return true;
-    });
+    await assert.rejects(
+      cache.fetchQuery(items.get('missing')),
+      (error: unknown) => {
+        assert.ok(error instanceof ApiError);
+        assert.equal(error.status, 401);
+        assert.deepEqual(error.body, {
+          code: 'unauthorized',
+          message: 'Session expired.',
+        });
+        return true;
+      },
+    );
   } finally {
     cache.clear();
   }
@@ -181,7 +184,7 @@ test('mutation validation errors preserve every field error for the application'
   });
   try {
     const observer = new MutationObserver(cache, mutations.create());
-    await assert.rejects(observer.mutate({ name: '' }), (error) => {
+    await assert.rejects(observer.mutate({ name: '' }), (error: unknown) => {
       assert.ok(error instanceof ApiError);
       assert.equal(error.status, 422);
       assert.deepEqual(error.body, body);

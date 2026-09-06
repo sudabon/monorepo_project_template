@@ -17,6 +17,7 @@
 | TypeScript | 5.9.3 | openapi-typescript 7.13.0 の peer が 5.x のため、その最新 patch を固定 | 6 / 7 への更新は生成器の peer 対応を待ち、型テストで確認 |
 | TanStack React Query | 5.102.8 | 手書きラッパから型付き options を公開。api-client の peer と開発依存に固定 | options helper、query key の型推論、React peer の対応範囲 |
 | React / @types/react | 19.2.8 / 19.2.18 | Query の開発時 peer と型検証に使用 | React peer と JSX / hook 型の互換性 |
+| @types/node | 26.4.1 | `node:test` を使う通信テストを `tsc --noEmit` の対象に含めるため。Node.js 26 系に合わせる | Node.js のメジャー更新への追随、DOM lib との global 衝突 |
 | Spectral CLI | 6.16.3 | OAS 推奨ルールと契約固有ルールを pnpm から実行 | 推奨ルールの追加、Node 対応、診断と終了コード |
 
 配布元: [Go](https://go.dev/dl/)、[Node.js](https://nodejs.org/dist/index.json)、[pnpm](https://registry.npmjs.org/pnpm/latest)、[Biome](https://registry.npmjs.org/@biomejs/biome/latest)。
@@ -51,7 +52,9 @@ Go / Web CI は `make gen-check-go` / `make gen-check-web` を使い、他言語
 
 TypeScript の生成物 `packages/api-client/src/generated/` は Biome の対象外。
 生成型を手編集せず、契約を修正して `make gen` を再実行する。
-Go の生成先は `apps/api/internal/generated/`。サーバ実装は Phase 2 で追加する。
+Go の生成先は `apps/api/internal/generated/`。生成は `scripts/go-task.sh gen` 経由で行い、
+GOTOOLCHAIN の導出をこのスクリプト 1 か所に閉じる。サーバ実装は Phase 2 で追加する。
+`packages/api-client` の型検証は `src` と `tests` の両方を対象にする。
 
 アプリケーションは `@monorepo-project-template/api-client` の package entry から
 `createItemQueries({ baseUrl: '/api' })` を作り、`items.list({ page: 1, pageSize: 20 })`

@@ -30,8 +30,7 @@ setup-web:
 gen: gen-go gen-web
 
 gen-go:
-	GOTOOLCHAIN=go$$(awk '$$1 == "go" { print $$2 }' go.work) \
-		go -C apps/api tool oapi-codegen -config ../../api/oapi-codegen.yaml ../../api/openapi.yaml
+	bash scripts/go-task.sh gen
 
 gen-web:
 	$(PNPM) exec openapi-typescript api/openapi.yaml --default-non-nullable false -o packages/api-client/src/generated/schema.d.ts

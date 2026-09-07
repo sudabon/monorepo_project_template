@@ -7,11 +7,12 @@ import (
 
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/domain"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/repository"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/testdb"
+	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/testdb"
 )
 
 func TestPersistentCRUDAndPagination(t *testing.T) {
-	db := testdb.Open(t)
+	db := testdb.Open(t, migrations.NewProvider)
 	repo := repository.NewItems(db)
 	ctx := context.Background()
 	empty, err := repo.List(ctx, domain.Pagination{Page: 1, PageSize: 2})
@@ -75,7 +76,7 @@ func TestPersistentCRUDAndPagination(t *testing.T) {
 }
 
 func TestListOrdersTimestampTiesByID(t *testing.T) {
-	db := testdb.Open(t)
+	db := testdb.Open(t, migrations.NewProvider)
 	_, err := db.Exec(`INSERT INTO items (id,name,created_at,updated_at) VALUES
 	('00000000-0000-0000-0000-000000000002','second','2026-01-01','2026-01-01'),
 	('00000000-0000-0000-0000-000000000001','first','2026-01-01','2026-01-01'),

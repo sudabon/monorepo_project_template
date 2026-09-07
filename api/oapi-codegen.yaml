@@ -3,5 +3,4 @@ package: generated
 generate:
   models: true
   echo-server: true
-  strict-server: true
 output: internal/generated/api.gen.go

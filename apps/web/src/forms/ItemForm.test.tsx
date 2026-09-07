@@ -16,6 +16,33 @@ describe('ItemForm', () => {
     expect(submit).not.toHaveBeenCalled();
   });
 
+  it('exposes client-side field errors as the input accessible description', async () => {
+    const submit = vi.fn();
+    const user = userEvent.setup();
+    render(<ItemForm submit={submit} />);
+    await user.click(screen.getByRole('button', { name: '保存' }));
+    expect(await screen.findByLabelText('名前')).toHaveAccessibleDescription(
+      '名前を入力してください',
+    );
+  });
+
+  it('exposes server field errors as the input accessible description', async () => {
+    const user = userEvent.setup();
+    const submit = vi.fn(async () => {
+      throw new ApiError(new Response(null, { status: 422 }), {
+        code: 'validation_error',
+        message: 'Invalid',
+        errors: [{ field: 'description', message: '説明が長すぎます' }],
+      });
+    });
+    render(<ItemForm submit={submit} />);
+    await user.type(screen.getByLabelText('名前'), 'Widget');
+    await user.click(screen.getByRole('button', { name: '保存' }));
+    expect(await screen.findByLabelText('説明')).toHaveAccessibleDescription(
+      '説明が長すぎます',
+    );
+  });
+
   it('shows server field errors on the matching input', async () => {
     const user = userEvent.setup();
     const submit = vi.fn(async () => {

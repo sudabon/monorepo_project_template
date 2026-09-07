@@ -46,6 +46,37 @@ function itemsFetch(
   });
 }
 
+function sortedClasses(element: HTMLElement): string[] {
+  return element.className.split(/\s+/).filter(Boolean).sort();
+}
+
+async function collectUnhandledRejections(
+  run: () => Promise<void>,
+): Promise<unknown[]> {
+  const reasons: unknown[] = [];
+  const previous = process.listeners('unhandledRejection');
+  process.removeAllListeners('unhandledRejection');
+  const onUnhandled = (reason: unknown) => {
+    reasons.push(reason);
+  };
+  process.on('unhandledRejection', onUnhandled);
+  try {
+    await run();
+    await new Promise<void>((resolve) => {
+      setImmediate(resolve);
+    });
+    return reasons;
+  } finally {
+    process.removeListener('unhandledRejection', onUnhandled);
+    for (const listener of previous) {
+      process.on(
+        'unhandledRejection',
+        listener as NodeJS.UnhandledRejectionListener,
+      );
+    }
+  }
+}
+
 describe('sample resource list conventions', () => {
   it('keeps list search in the URL schema rather than component state', async () => {
     const { readFileSync } = await import('node:fs');
@@ -317,6 +348,63 @@ describe('sample resource create and edit', () => {
     ).toBeInTheDocument();
   });
 
+  it('saves a multiline description and shows the line breaks', async () => {
+    const user = userEvent.setup();
+    let stored = {
+      ...itemB,
+      name: 'Notes Widget',
+      description: '',
+    };
+    await renderApp({
+      path: '/items/new',
+      session: authedSession,
+      config: testConfig,
+      fetchImpl: itemsFetch(async (input, init) => {
+        const request =
+          input instanceof Request ? input : new Request(input, init);
+        const url = request.url;
+        if (request.method === 'POST' && url.endsWith('/api/items')) {
+          const body = (await request.json()) as {
+            name: string;
+            description?: string;
+          };
+          stored = {
+            ...stored,
+            name: body.name,
+            description: body.description ?? '',
+          };
+          return jsonResponse(stored, 201);
+        }
+        if (url.includes(`/api/items/${stored.id}`)) {
+          return jsonResponse(stored);
+        }
+        if (url.includes('/api/items')) {
+          return jsonResponse({
+            items: [stored],
+            page: 1,
+            pageSize: 20,
+            total: 1,
+          });
+        }
+        throw new Error(`unexpected fetch ${url}`);
+      }),
+    });
+    await user.type(await screen.findByLabelText('名前'), 'Notes Widget');
+    expect(screen.getByLabelText('説明').tagName).toBe('TEXTAREA');
+    await user.type(
+      screen.getByLabelText('説明'),
+      'first line{Enter}second line',
+    );
+    await user.click(screen.getByRole('button', { name: '保存' }));
+    await user.click(await screen.findByRole('link', { name: 'Notes Widget' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Notes Widget' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/first line/).textContent).toBe(
+      'first line\nsecond line',
+    );
+  });
+
   it('shows server field errors and does not keep a rejected create', async () => {
     const user = userEvent.setup();
     // The list reads this array, so an accepted create would show up below.
@@ -446,6 +534,98 @@ describe('sample resource delete', () => {
       await screen.findByRole('heading', { name: 'サンプルリソース' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('Alpha Widget')).not.toBeInTheDocument();
+  });
+
+  it('notifies a failed delete once without an unhandled rejection', async () => {
+    const user = userEvent.setup();
+    const items = [itemA];
+    const unhandled = await collectUnhandledRejections(async () => {
+      await renderApp({
+        path: `/items/${itemA.id}`,
+        session: authedSession,
+        config: testConfig,
+        fetchImpl: itemsFetch(async (input, init) => {
+          const request =
+            input instanceof Request ? input : new Request(input, init);
+          const url = request.url;
+          if (
+            request.method === 'DELETE' &&
+            url.includes(`/api/items/${itemA.id}`)
+          ) {
+            return jsonResponse(
+              { code: 'error', message: '削除できませんでした' },
+              500,
+            );
+          }
+          if (url.includes(`/api/items/${itemA.id}`)) {
+            return jsonResponse(itemA);
+          }
+          if (url.includes('/api/items')) {
+            return jsonResponse({
+              items,
+              page: 1,
+              pageSize: 20,
+              total: items.length,
+            });
+          }
+          throw new Error(`unexpected fetch ${url}`);
+        }),
+      });
+      await user.click(await screen.findByRole('button', { name: '削除' }));
+      await user.click(screen.getByRole('button', { name: '削除する' }));
+      expect(await screen.findByRole('status')).toHaveTextContent(
+        '削除できませんでした',
+      );
+    });
+    expect(unhandled).toHaveLength(0);
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+    expect(
+      screen.getByRole('dialog', { name: '削除の確認' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await user.click(screen.getByRole('link', { name: '一覧へ戻る' }));
+    expect(await screen.findByText('Alpha Widget')).toBeInTheDocument();
+  });
+});
+
+describe('sample resource button appearance', () => {
+  it('gives action links the same focus and disabled classes as buttons', async () => {
+    const user = userEvent.setup();
+    await renderApp({
+      path: '/items',
+      session: authedSession,
+      config: testConfig,
+      fetchImpl: itemsFetch(async (input) => {
+        const url = String(input instanceof Request ? input.url : input);
+        if (url.includes(`/api/items/${itemA.id}`)) {
+          return jsonResponse(itemA);
+        }
+        if (url.includes('/api/items')) {
+          return jsonResponse({
+            items: [itemA],
+            page: 1,
+            pageSize: 20,
+            total: 1,
+          });
+        }
+        throw new Error(`unexpected fetch ${url}`);
+      }),
+    });
+    const createLink = await screen.findByRole('link', { name: '新規作成' });
+    const nextPage = screen.getByRole('button', { name: '次のページ' });
+    expect(createLink.className).toMatch(/focus-visible:/);
+    expect(nextPage.className).toMatch(/focus-visible:/);
+    expect(createLink.className).toMatch(/disabled:/);
+    expect(nextPage.className).toMatch(/disabled:/);
+    expect(sortedClasses(createLink)).toEqual(sortedClasses(nextPage));
+    await user.click(screen.getByRole('link', { name: 'Alpha Widget' }));
+    const editLink = await screen.findByRole('link', { name: '編集' });
+    const deleteButton = screen.getByRole('button', { name: '削除' });
+    expect(editLink.className).toMatch(/focus-visible:/);
+    expect(deleteButton.className).toMatch(/focus-visible:/);
+    expect(editLink.className).toMatch(/disabled:/);
+    expect(deleteButton.className).toMatch(/disabled:/);
+    expect(sortedClasses(editLink)).toEqual(sortedClasses(deleteButton));
   });
 });
 

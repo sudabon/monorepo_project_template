@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { Button } from './button.tsx';
+import { Button, buttonClasses } from './button.tsx';
 import { Input } from './input.tsx';
+import { Textarea } from './textarea.tsx';
 import { Modal } from './modal.tsx';
 import {
   Table,
@@ -23,11 +24,55 @@ describe('ui components', () => {
     expect(onClick).toHaveBeenCalledOnce();
   });
 
+  it('gives links the same focus and disabled classes as buttons', () => {
+    render(
+      <>
+        <Button>保存</Button>
+        <a className={buttonClasses()} href="/items/new">
+          新規作成
+        </a>
+      </>,
+    );
+    const button = screen.getByRole('button', { name: '保存' });
+    const link = screen.getByRole('link', { name: '新規作成' });
+    expect(button.className).toMatch(/focus-visible:/);
+    expect(link.className).toMatch(/focus-visible:/);
+    expect(button.className).toMatch(/disabled:/);
+    expect(link.className).toMatch(/disabled:/);
+    expect(button.className.split(/\s+/).filter(Boolean).sort()).toEqual(
+      link.className.split(/\s+/).filter(Boolean).sort(),
+    );
+  });
+
   it('associates an input with its label', async () => {
     const user = userEvent.setup();
     render(<Input label="名前" />);
     await user.type(screen.getByLabelText('名前'), 'Widget');
     expect(screen.getByLabelText('名前')).toHaveValue('Widget');
+  });
+
+  it('exposes described-by text as the accessible description', () => {
+    render(
+      <>
+        <Input label="名前" describedBy="name-error" />
+        <p id="name-error">名前を入力してください</p>
+        <Textarea label="説明" describedBy="description-error" />
+        <p id="description-error">説明が長すぎます</p>
+      </>,
+    );
+    expect(screen.getByLabelText('名前')).toHaveAccessibleDescription(
+      '名前を入力してください',
+    );
+    expect(screen.getByLabelText('説明')).toHaveAccessibleDescription(
+      '説明が長すぎます',
+    );
+  });
+
+  it('associates a textarea with its label and keeps line breaks', async () => {
+    const user = userEvent.setup();
+    render(<Textarea label="説明" />);
+    await user.type(screen.getByLabelText('説明'), 'first{Enter}second');
+    expect(screen.getByLabelText('説明')).toHaveValue('first\nsecond');
   });
 
   it('renders table content', () => {

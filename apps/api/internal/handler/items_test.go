@@ -2,17 +2,20 @@ package handler_test
 
 import (
 	"bytes"
-	"encoding/json"
+	"context"
+	"encoding/json/v2"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/sudabon/monorepo_project_template/apps/api/internal/domain"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/generated"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/handler"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/repository"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/testdb"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/usecase"
+	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/testdb"
 )
 
 func request(t *testing.T, api http.Handler, method, path, body string, status int) *httptest.ResponseRecorder {
@@ -31,7 +34,7 @@ func request(t *testing.T, api http.Handler, method, path, body string, status i
 }
 
 func TestHTTPPersistentCRUD(t *testing.T) {
-	db := testdb.Open(t)
+	db := testdb.Open(t, migrations.NewProvider)
 	newAPI := func() http.Handler { return handler.New(usecase.NewItems(repository.NewItems(db)), db.PingContext) }
 	api := newAPI()
 	created := request(t, api, "POST", "/api/items", `{"name":"original","description":"details"}`, 201)
@@ -71,7 +74,7 @@ func TestHTTPPersistentCRUD(t *testing.T) {
 }
 
 func TestHTTPValidationDoesNotPersist(t *testing.T) {
-	db := testdb.Open(t)
+	db := testdb.Open(t, migrations.NewProvider)
 	api := handler.New(usecase.NewItems(repository.NewItems(db)), db.PingContext)
 	tooLong := strings.Repeat("文", 2001)
 	for _, tc := range []struct {
@@ -114,7 +117,7 @@ func TestHTTPValidationDoesNotPersist(t *testing.T) {
 }
 
 func TestHTTPPaginationAndMalformedParameters(t *testing.T) {
-	db := testdb.Open(t)
+	db := testdb.Open(t, migrations.NewProvider)
 	api := handler.New(usecase.NewItems(repository.NewItems(db)), db.PingContext)
 	for _, name := range []string{"a", "b", "c"} {
 		request(t, api, "POST", "/api/items", `{"name":"`+name+`"}`, 201)
@@ -151,7 +154,7 @@ func TestHTTPPaginationAndMalformedParameters(t *testing.T) {
 }
 
 func TestHTTPRejectsNULWithoutCreatingOrUpdating(t *testing.T) {
-	db := testdb.Open(t)
+	db := testdb.Open(t, migrations.NewProvider)
 	api := handler.New(usecase.NewItems(repository.NewItems(db)), db.PingContext)
 	created := request(t, api, "POST", "/api/items", `{"name":"original","description":"keep"}`, 201)
 	var item generated.Item
@@ -210,5 +213,33 @@ func TestHTTPRejectsNULWithoutCreatingOrUpdating(t *testing.T) {
 	}
 	if literal.Name != `\u0000` || literal.Description != "first\nsecond" {
 		t.Fatalf("valid text changed: %+v", literal)
+	}
+}
+
+type invalidIDRepo struct{}
+
+func (invalidIDRepo) Create(context.Context, domain.ItemInput) (domain.Item, error) {
+	return domain.Item{}, nil
+}
+func (invalidIDRepo) Get(context.Context, string) (domain.Item, error) {
+	return domain.Item{ID: "not-a-uuid", Name: "broken"}, nil
+}
+func (invalidIDRepo) Update(context.Context, string, domain.ItemInput) (domain.Item, error) {
+	return domain.Item{}, nil
+}
+func (invalidIDRepo) Delete(context.Context, string) error { return nil }
+func (invalidIDRepo) List(context.Context, domain.Pagination) (domain.ItemPage, error) {
+	return domain.ItemPage{}, nil
+}
+
+func TestInvalidStoredIDReturns500NotPanic(t *testing.T) {
+	api := handler.New(usecase.NewItems(invalidIDRepo{}), func(context.Context) error { return nil })
+	rec := request(t, api, "GET", "/api/items/11111111-1111-1111-1111-111111111111", "", http.StatusInternalServerError)
+	var e generated.Error
+	if err := json.Unmarshal(rec.Body.Bytes(), &e); err != nil {
+		t.Fatal(err)
+	}
+	if e.Code != "internal_error" || strings.Contains(rec.Body.String(), "panic") || strings.Contains(rec.Body.String(), "not-a-uuid") {
+		t.Fatalf("response leaked internals: %s", rec.Body)
 	}
 }

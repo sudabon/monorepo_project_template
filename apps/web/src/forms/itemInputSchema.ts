@@ -1,19 +1,24 @@
+import { constraints } from '@monorepo-project-template/api-client';
 import { z } from 'zod';
 
-// Mirrors ItemInput in api/openapi.yaml: name 1-100, description up to 2000,
-// and no NUL in either. Keep this in step with the contract.
+const name = constraints.ItemInput.name;
+const description = constraints.ItemInput.description;
+
 export const itemInputSchema = z.object({
   name: z
     .string()
-    .min(1, '名前を入力してください')
-    .max(100, '名前は 100 文字以内で入力してください')
-    .refine((value) => !value.includes('\u0000'), {
+    .min(name.minLength, '名前を入力してください')
+    .max(name.maxLength, `名前は ${name.maxLength} 文字以内で入力してください`)
+    .refine((value) => new RegExp(name.pattern).test(value), {
       message: '名前に NUL 文字は使えません',
     }),
   description: z
     .string()
-    .max(2000, '説明は 2000 文字以内で入力してください')
-    .refine((value) => !value.includes('\u0000'), {
+    .max(
+      description.maxLength,
+      `説明は ${description.maxLength} 文字以内で入力してください`,
+    )
+    .refine((value) => new RegExp(description.pattern).test(value), {
       message: '説明に NUL 文字は使えません',
     }),
 });

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cmp"
 	"fmt"
 	"log/slog"
 	"net"
@@ -11,6 +10,7 @@ import (
 	"github.com/sudabon/monorepo_project_template/apps/bff/internal/handler"
 	"github.com/sudabon/monorepo_project_template/apps/bff/internal/identity"
 	"github.com/sudabon/monorepo_project_template/apps/bff/internal/session"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/config"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/database"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/logging"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/server"
@@ -21,33 +21,40 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if os.Getenv("DATABASE_URL") == "" {
-		return fmt.Errorf("DATABASE_URL is required")
+	databaseURL, err := config.Require("DATABASE_URL")
+	if err != nil {
+		return err
 	}
-	backendURL := os.Getenv("BACKEND_URL")
-	if backendURL == "" {
-		return fmt.Errorf("BACKEND_URL is required")
+	backendURL, err := config.Require("BACKEND_URL")
+	if err != nil {
+		return err
 	}
 	backend, err := url.Parse(backendURL)
 	if err != nil || backend.Scheme == "" || backend.Host == "" {
 		return fmt.Errorf("BACKEND_URL must be an absolute URL")
 	}
-	username := os.Getenv("BFF_DEMO_USERNAME")
-	password := os.Getenv("BFF_DEMO_PASSWORD")
-	if username == "" || password == "" {
-		return fmt.Errorf("BFF_DEMO_USERNAME and BFF_DEMO_PASSWORD are required")
+	username, err := config.Require("BFF_DEMO_USERNAME")
+	if err != nil {
+		return err
 	}
-	db, err := database.Open(os.Getenv("DATABASE_URL"))
+	password, err := config.Require("BFF_DEMO_PASSWORD")
+	if err != nil {
+		return err
+	}
+	secure, err := config.Bool("BFF_COOKIE_SECURE", true)
+	if err != nil {
+		return err
+	}
+	db, err := database.Open(databaseURL)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	address := cmp.Or(os.Getenv("HTTP_ADDR"), ":8081")
+	address := config.Or("HTTP_ADDR", ":8081")
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		return err
 	}
-	secure := os.Getenv("BFF_COOKIE_SECURE") != "false" && os.Getenv("BFF_COOKIE_SECURE") != "0"
 	slog.Info("BFF listening", "address", listener.Addr().String())
 	return server.Serve(listener, handler.New(handler.Deps{
 		Store:        session.NewPostgres(db),

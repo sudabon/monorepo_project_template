@@ -5,16 +5,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sudabon/monorepo_project_template/apps/bff/internal/testdb"
+	"github.com/sudabon/monorepo_project_template/apps/bff/migrations"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/testdb"
 )
 
 func TestPostgresCreateGetDelete(t *testing.T) {
-	exerciseStore(t, NewPostgres(testdb.Open(t)))
+	exerciseStore(t, NewPostgres(testdb.Open(t, migrations.NewProvider)))
 }
 
 func TestPostgresRejectsExpiredAndUnknown(t *testing.T) {
 	now := time.Now()
-	store := NewPostgres(testdb.Open(t), WithIdle(50*time.Millisecond), WithAbsolute(time.Second), WithNow(func() time.Time { return now }))
+	store := NewPostgres(testdb.Open(t, migrations.NewProvider), WithIdle(50*time.Millisecond), WithAbsolute(time.Second), WithNow(func() time.Time { return now }))
 	sess, err := store.Create(t.Context(), "u1", "Demo")
 	if err != nil {
 		t.Fatal(err)

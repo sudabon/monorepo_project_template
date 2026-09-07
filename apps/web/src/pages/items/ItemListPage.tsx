@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useRouteContext } from '@tanstack/react-router';
-import { Button } from '../../components/ui/button.tsx';
+import { Button, buttonClasses } from '../../components/ui/button.tsx';
 import { Input } from '../../components/ui/input.tsx';
 import {
   Table,
@@ -41,10 +41,7 @@ export function ItemListPage({ search, onQueryChange, onPageChange }: Props) {
     <main className="p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">サンプルリソース</h1>
-        <Link
-          to="/items/new"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
-        >
+        <Link to="/items/new" className={buttonClasses()}>
           新規作成
         </Link>
       </div>

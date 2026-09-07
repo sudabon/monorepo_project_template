@@ -7,17 +7,21 @@ import (
 	"time"
 
 	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/config"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/database"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/migrate"
 )
 
 func run() error {
-	if len(os.Args) != 2 || (os.Args[1] != "up" && os.Args[1] != "down") {
-		return fmt.Errorf("usage: migrate <up|down>")
+	arg := ""
+	if len(os.Args) == 2 {
+		arg = os.Args[1]
 	}
-	if os.Getenv("DATABASE_URL") == "" {
-		return fmt.Errorf("DATABASE_URL is required")
+	databaseURL, err := config.Require("DATABASE_URL")
+	if err != nil {
+		return err
 	}
-	db, err := database.Open(os.Getenv("DATABASE_URL"))
+	db, err := database.Open(databaseURL)
 	if err != nil {
 		return err
 	}
@@ -28,13 +32,9 @@ func run() error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if os.Args[1] == "up" {
-		_, err = p.Up(ctx)
-	} else {
-		_, err = p.Down(ctx)
-	}
-	return err
+	return migrate.Run(ctx, p, arg)
 }
+
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

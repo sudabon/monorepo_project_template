@@ -24,6 +24,8 @@
 ## サーバ状態とエラー
 
 - `QueryClient` の既定値は `src/query/createQueryClient.ts` にだけ置く。
+- 作成・更新・削除のあとキャッシュを無効化するキーは `api-client` の `itemKeys` から取る。
+  `queryKey: ['items']` のような文字列リテラルで組み立てない。
 - 401 はセッション切れとしてログインへ。5xx はトースト。それ以外も握りつぶさず表示する。
 - フォームが契約のフィールドエラーを描くミューテーションは `meta: { formHandlesValidation: true }`
   を付ける。付けないと 422 が項目とトーストの二重表示になる。5xx は meta があっても通知する。
@@ -31,15 +33,18 @@
 
 ## UI
 
-- ボタン・入力・モーダル・テーブル・トーストは `src/components/ui/` の内製コードを使う。
+- ボタン・入力・複数行入力・モーダル・テーブル・トーストは `src/components/ui/` の内製コードを使う。
 - UI コンポーネントライブラリを依存に追加しない。
+- ボタンの見た目を `<button>` 以外で使うときは `buttonClasses` を使う。クラス文字列を写さない。
 - ダークモードは実装しない。
 
 ## フォーム
 
 - クライアント検証は react-hook-form + zod。契約の制約に寄せたスキーマの例は `src/forms/itemInputSchema.ts`。
-  文字数と禁止文字は `api/openapi.yaml` と揃える。契約を変えたらスキーマとテストも直す。
+  文字数と禁止文字は `api-client` が公開する生成制約を参照する。契約を変えたら `make gen` してからスキーマとテストを直す。
+- ページが共有する文言は `src/pages/<resource>/messages.ts` に置く。ページ実装同士を import しない。
 - サーバの `validation_error.errors[].field` は `mapServerErrors` でフォーム項目へ変換する。対応しない項目はフォーム全体のエラーにする。
+- 項目のエラーは入力欄と `aria-describedby` で結ぶ。隣に置くだけでは関連付かない。
 
 ## テスト
 

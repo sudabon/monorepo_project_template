@@ -36,4 +36,16 @@ go-arch-lint から見ると共有モジュールは vendor になる。`vendors
 宣言し、外部依存を広く許していない component（BFF の `proxy` 等）には
 `canUse: [platform]` で個別に許可する。`anyVendorDeps: true` に緩めない。
 
+## Echo 依存とエラー語彙（2026-09-07 追記）
+
+Echo に触れる配線（リクエスト ID の middleware、health ルート、エラー封筒の書き出し）は
+`packages/go-platform/echox` に閉じる。`logging` / `server` / `database` は Echo 非依存のままとする。
+Echo はスタック表の確定事項であり両サービスが既に使っている。一方で、モジュール全体が
+Echo を要求すると「DB プールだけ使いたい」利用者が Echo を引き込む。パッケージを分ければ、
+import しないものはバイナリに入らない。
+
+エラー応答は `{code, message}` の JSON 書き出しと `Committed` 判定だけを共有し、
+HTTP ステータスとコード語彙の対応表は各サービスに残す。API は 422 の検証エラー、
+BFF は CSRF / payload を持ち、語彙はサービスごとに違うのが正しい。
+
 参考: [ADR 0003](0003-api-database-and-architecture.md)、[docs/bff.md](../bff.md)。

@@ -6,12 +6,19 @@ TypeScript のファイルは開かない。
 `apps/api` と `apps/bff` の両方が import する。判断の背景は
 [ADR 0006](../../docs/adr/0006-shared-go-platform-module.md)。
 
+**置いてよいのは両サービスに同じ形で存在する配線だけ。業務ロジックと片側だけの都合は入れない。**
+
 - `logging`: `log/slog` の JSON ハンドラと、context 経由のリクエスト ID 伝播。
   ヘッダ名 `X-Request-ID` はここが唯一の定義。
 - `server`: シグナル受信と graceful shutdown。`SHUTDOWN_TIMEOUT` の既定 20 秒は
   ECS の `stopTimeout` より短いことが前提。根拠のコメントを消さない。
 - `database`: pgx の `database/sql` プール設定。接続本数は API と BFF の合計タスク数で
   見積もる。片方だけを見た数字にしない。
+- `config`: 環境変数の `Require` / `Or` / `Bool`。未設定と不正値の扱いを揃える。
+- `migrate`: goose Provider の `up` / `down` と CLI 引数の解釈。
+- `echox`: Echo に触れる middleware・health ルート・エラー封筒の書き出し。
+  Echo 依存はこのパッケージに閉じ、他パッケージは Echo を import しない。
+- `testdb`: 統合テスト専用の schema 分離。production からの依存は禁止。
 
 ## 禁止
 
@@ -19,6 +26,7 @@ TypeScript のファイルは開かない。
 - **`apps/*/internal/platform/` に複製し直さない。** 複製がコメントごと劣化したのが
   この module を作った理由。
 - `apps/api` / `apps/bff` を import しない。依存の向きは常にこちらが内側。
+- エラーコード語彙（HTTP ステータスと `code` の対応表）を置かない。封筒の書き出しだけを共有する。
 
 ## 変更するとき
 

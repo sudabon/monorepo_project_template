@@ -9,13 +9,13 @@ import (
 	"os"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
-	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
+	"github.com/pressly/goose/v3"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/database"
 )
 
-func Open(t *testing.T) *sql.DB {
+func Open(t *testing.T, newProvider func(*sql.DB) (*goose.Provider, error)) *sql.DB {
 	t.Helper()
 	dsn := os.Getenv("TEST_DATABASE_URL")
 	if dsn == "" {
@@ -26,7 +26,7 @@ func Open(t *testing.T) *sql.DB {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = admin.Close() })
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
 	defer cancel()
 	schema := "test_" + uuid.New().String()
 	quoted := `"` + schema + `"`
@@ -52,7 +52,7 @@ func Open(t *testing.T) *sql.DB {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = db.Close() })
-	p, err := migrations.NewProvider(db)
+	p, err := newProvider(db)
 	if err != nil {
 		t.Fatal(err)
 	}

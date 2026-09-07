@@ -1,8 +1,10 @@
 import { ApiError } from '@monorepo-project-template/api-client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '../components/ui/button.tsx';
 import { Input } from '../components/ui/input.tsx';
+import { Textarea } from '../components/ui/textarea.tsx';
 import { itemInputSchema, type ItemInputValues } from './itemInputSchema.ts';
 import { applyMappedErrors, mapServerErrors } from './mapServerErrors.ts';
 
@@ -17,6 +19,8 @@ export function ItemForm({
   submit,
   defaultValues = { name: '', description: '' },
 }: Props) {
+  const nameErrorId = useId();
+  const descriptionErrorId = useId();
   const form = useForm<ItemInputValues>({
     resolver: zodResolver(itemInputSchema),
     defaultValues,
@@ -58,18 +62,27 @@ export function ItemForm({
         <Input
           label="名前"
           invalid={Boolean(errors.name)}
+          describedBy={errors.name ? nameErrorId : undefined}
           {...register('name')}
         />
-        {errors.name ? <p role="alert">{errors.name.message}</p> : null}
+        {errors.name ? (
+          <p id={nameErrorId} role="alert">
+            {errors.name.message}
+          </p>
+        ) : null}
       </div>
       <div>
-        <Input
+        <Textarea
           label="説明"
           invalid={Boolean(errors.description)}
+          describedBy={errors.description ? descriptionErrorId : undefined}
+          rows={4}
           {...register('description')}
         />
         {errors.description ? (
-          <p role="alert">{errors.description.message}</p>
+          <p id={descriptionErrorId} role="alert">
+            {errors.description.message}
+          </p>
         ) : null}
       </div>
       <Button type="submit" disabled={isSubmitting}>

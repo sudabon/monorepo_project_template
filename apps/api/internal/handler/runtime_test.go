@@ -3,7 +3,7 @@ package handler_test
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -14,13 +14,14 @@ import (
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/generated"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/handler"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/repository"
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/testdb"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/usecase"
+	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/logging"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/testdb"
 )
 
 func TestHealthAndErrorTracingWithUnavailableDB(t *testing.T) {
-	db := testdb.Open(t)
+	db := testdb.Open(t, migrations.NewProvider)
 	api := handler.New(usecase.NewItems(repository.NewItems(db)), db.PingContext)
 	request(t, api, "GET", "/health/shallow", "", 200)
 	request(t, api, "GET", "/health/deep", "", 200)

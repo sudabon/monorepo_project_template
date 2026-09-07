@@ -87,4 +87,5 @@ require (
 tool (
 	github.com/fe3dback/go-arch-lint
 	github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
+	github.com/sudabon/monorepo_project_template/apps/api/internal/tools/genconstraints
 )

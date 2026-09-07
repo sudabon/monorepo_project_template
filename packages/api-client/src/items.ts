@@ -11,13 +11,19 @@ type UpdateItemVariables = operations['updateItem']['parameters']['path'] & {
   body: operations['updateItem']['requestBody']['content']['application/json'];
 };
 
+export const itemKeys = {
+  all: ['items'] as const,
+  list: (params: ListItemsParams) => [...itemKeys.all, 'list', params] as const,
+  detail: (id: ItemId) => [...itemKeys.all, 'detail', id] as const,
+};
+
 export function createItemQueries(options: ClientOptions) {
   const client = createApiClient(options);
 
   return {
     list(params: ListItemsParams = {}) {
       return queryOptions({
-        queryKey: ['items', 'list', params] as const,
+        queryKey: itemKeys.list(params),
         queryFn: async ({ signal }) =>
           responseData(
             await client.GET('/items', { params: { query: params }, signal }),
@@ -26,7 +32,7 @@ export function createItemQueries(options: ClientOptions) {
     },
     get(id: ItemId) {
       return queryOptions({
-        queryKey: ['items', 'detail', id] as const,
+        queryKey: itemKeys.detail(id),
         queryFn: async ({ signal }) =>
           responseData(
             await client.GET('/items/{id}', {

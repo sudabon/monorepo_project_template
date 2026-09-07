@@ -4,9 +4,17 @@ import { cn } from '../../lib/cn.ts';
 type Props = InputHTMLAttributes<HTMLInputElement> & {
   invalid?: boolean;
   label?: string;
+  describedBy?: string;
 };
 
-export function Input({ className, invalid, id, label, ...props }: Props) {
+export function Input({
+  className,
+  invalid,
+  id,
+  label,
+  describedBy,
+  ...props
+}: Props) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const input = (
@@ -18,8 +26,9 @@ export function Input({ className, invalid, id, label, ...props }: Props) {
         invalid && 'border-destructive',
         className,
       )}
-      aria-invalid={invalid || undefined}
       {...props}
+      aria-invalid={invalid || undefined}
+      aria-describedby={describedBy}
     />
   );
   if (!label) {

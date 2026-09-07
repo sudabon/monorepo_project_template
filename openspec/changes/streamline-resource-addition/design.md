@@ -85,7 +85,11 @@ func decodeFields(c echo.Context, order []string) (map[string]*string, domain.Va
 - **生成ステップが 1 つ増える** → `make gen` に載せ、`make gen-check` の既存経路で検査する。新しいコマンドは増やさない
 - **generator 自体がテンプレートの保守対象になる** → 抽出するのは `minLength` / `maxLength` / `pattern` の 3 つに限り、汎用な OpenAPI → コード変換にはしない。汎用化が必要になったら `oapi-codegen` 側の機能を待つ
 - **`strict-server` を外すと将来採用したくなったとき戻す手間がある** → 設定 1 行なので戻せる。判断の理由を ADR ではなく本 design と `apps/api/AGENTS.md` に残す
-- **`decodeFields` の抽象が早すぎる可能性** → 2 本目のリソースを実際に足して確認する。タスクに含める
+- **`decodeFields` の抽象が早すぎる可能性** → 2 本目の文字列リソース（`title` / `body`）を handler 層で足して確認した。公開契約は増やしていない。過不足は次のとおり。
+  - **足りている**: Content-Type・サイズ・多重 JSON・null と欠損の区別は共有できた。資源固有コードはフィールド名の列と `map[string]*string` からの詰め替えに収まった。
+  - **共有がもう 1 つ要る**: 型エラーと `Validate()` の合成は `mergeFieldErrors` に切り出した。`decodeFields` だけでは契約順のマージが残る。
+  - **足りない（意図的）**: 戻り値は `*string` だけなので、数値・真偽・ネストしたオブジェクトは対象外。テンプレートの書き込み入力が文字列の間はこれで足りる。非文字列が要るときは `decodeFields` を広げる。
+  - 確認後、公開契約と永続化は足さず、handler の回帰テストだけ残した。
 
 ## Open Questions
 

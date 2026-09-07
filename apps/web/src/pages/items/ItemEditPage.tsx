@@ -1,8 +1,9 @@
+import { itemKeys } from '@monorepo-project-template/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { ItemForm } from '../../forms/ItemForm.tsx';
-import { itemLoadMessage } from './ItemDetailPage.tsx';
 import type { ItemInputValues } from '../../forms/itemInputSchema.ts';
+import { itemLoadMessage } from './messages.ts';
 
 type Props = {
   itemId: string;
@@ -20,7 +21,7 @@ export function ItemEditPage({ itemId }: Props) {
 
   async function submit(values: ItemInputValues): Promise<void> {
     await mutation.mutateAsync({ id: itemId, body: values });
-    await queryClient.invalidateQueries({ queryKey: ['items'] });
+    await queryClient.invalidateQueries({ queryKey: itemKeys.all });
     await navigate({ to: '/items/$itemId', params: { itemId } });
   }
 

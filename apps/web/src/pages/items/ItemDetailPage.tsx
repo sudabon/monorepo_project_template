@@ -1,10 +1,11 @@
-import { ApiError } from '@monorepo-project-template/api-client';
+import { itemKeys } from '@monorepo-project-template/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { useState } from 'react';
-import { Button } from '../../components/ui/button.tsx';
+import { Button, buttonClasses } from '../../components/ui/button.tsx';
 import { Modal } from '../../components/ui/modal.tsx';
 import { defaultItemListSearch } from './itemListSearch.ts';
+import { itemLoadMessage } from './messages.ts';
 
 type Props = {
   itemId: string;
@@ -40,7 +41,7 @@ export function ItemDetailPage({ itemId }: Props) {
 
   async function confirmDelete(): Promise<void> {
     await mutation.mutateAsync(itemId);
-    await queryClient.invalidateQueries({ queryKey: ['items'] });
+    await queryClient.invalidateQueries({ queryKey: itemKeys.all });
     setConfirmOpen(false);
     await navigate({ to: '/items', search: defaultItemListSearch });
   }
@@ -58,7 +59,7 @@ export function ItemDetailPage({ itemId }: Props) {
         <Link
           to="/items/$itemId/edit"
           params={{ itemId: item.id }}
-          className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+          className={buttonClasses()}
         >
           編集
         </Link>
@@ -84,7 +85,7 @@ export function ItemDetailPage({ itemId }: Props) {
             type="button"
             disabled={mutation.isPending}
             onClick={() => {
-              void confirmDelete();
+              void confirmDelete().catch(() => undefined);
             }}
           >
             削除する
@@ -93,11 +94,4 @@ export function ItemDetailPage({ itemId }: Props) {
       </Modal>
     </main>
   );
-}
-
-export function itemLoadMessage(error: unknown): string {
-  if (error instanceof ApiError && error.status === 404) {
-    return 'サンプルリソースが見つかりません';
-  }
-  return 'サンプルリソースを取得できませんでした';
 }

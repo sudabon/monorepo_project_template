@@ -7,16 +7,19 @@
 - `internal/session`: セッションの発行・取得・失効。本番は PostgreSQL。
   識別子だけを `session_id` Cookie（httpOnly / Secure / SameSite=Lax）に入れる。
 - `internal/identity`: 資格情報の検証。テンプレート初期値はデモユーザのみ。
-- `internal/handler`: Echo の入口。リクエスト ID、クライアント由来 `X-User-ID` の
-  削除、セッション読み込み、状態変更メソッドへの CSRF を `e.Use` で一律に掛ける。
-  ルートごとの CSRF opt-in は禁止。`POST /auth/login` だけは発行前のため対象外。
+- `internal/handler`: Echo の入口。`router.go` が DI、`middleware.go` がセッションと CSRF、
+  `auth.go` がログイン、`errors.go` がステータスとコード語彙の対応。リクエスト ID と
+  health は `packages/go-platform/echox`。クライアント由来 `X-User-ID` の削除、セッション
+  読み込み、状態変更メソッドへの CSRF を `e.Use` で一律に掛ける。ルートごとの CSRF
+  opt-in は禁止。`POST /auth/login` だけは発行前のため対象外。
 - `internal/proxy`: `/api/*` を backend へ転送する。outbound で `X-User-ID` を
   削除してからセッションのユーザ ID を設定し、`X-Request-ID` を付ける。
-- `cmd/bff`: 設定と DI。`cmd/migrate` は goose（version テーブル
-  `bff_goose_db_version`）。起動時に自動 migrate しない。
-  ログ・shutdown・DB プールは `packages/go-platform` を使い、API と共有する
-  （[ADR 0006](../../docs/adr/0006-shared-go-platform-module.md)）。
-- `internal/testdb`: 統合テスト専用。production からの依存は禁止。
+- `cmd/bff`: 設定と DI。環境変数は `packages/go-platform/config`。`cmd/migrate` は
+  `packages/go-platform/migrate` 経由の goose（version テーブル `bff_goose_db_version`）。
+  起動時に自動 migrate しない。ログ・shutdown・DB プールは `packages/go-platform` を使い、
+  API と共有する（[ADR 0006](../../docs/adr/0006-shared-go-platform-module.md)）。
+- 統合テストの PostgreSQL スキーマ分離は `packages/go-platform/testdb`。
+  production からの依存は禁止。
 
 Cookie と同一オリジン配信の前提は [docs/bff.md](../../docs/bff.md)。
 ストア選定は [ADR 0004](../../docs/adr/0004-bff-session-store.md)、

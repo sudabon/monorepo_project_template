@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"net"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/handler"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/repository"
 	"github.com/sudabon/monorepo_project_template/apps/api/internal/usecase"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/config"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/database"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/logging"
 	"github.com/sudabon/monorepo_project_template/packages/go-platform/server"
@@ -19,18 +19,16 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if os.Getenv("DATABASE_URL") == "" {
-		return fmt.Errorf("DATABASE_URL is required")
+	databaseURL, err := config.Require("DATABASE_URL")
+	if err != nil {
+		return err
 	}
-	db, err := database.Open(os.Getenv("DATABASE_URL"))
+	db, err := database.Open(databaseURL)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	address := os.Getenv("HTTP_ADDR")
-	if address == "" {
-		address = ":8080"
-	}
+	address := config.Or("HTTP_ADDR", ":8080")
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		return err
@@ -38,6 +36,7 @@ func run() error {
 	slog.Info("API listening", "address", listener.Addr().String())
 	return server.Serve(listener, handler.New(usecase.NewItems(repository.NewItems(db)), db.PingContext), wait)
 }
+
 func main() {
 	slog.SetDefault(logging.New(os.Stdout))
 	if err := run(); err != nil {

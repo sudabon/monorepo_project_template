@@ -1,3 +1,4 @@
+import { itemKeys } from '@monorepo-project-template/api-client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { ItemForm } from '../../forms/ItemForm.tsx';
@@ -15,7 +16,7 @@ export function ItemCreatePage() {
 
   async function submit(values: ItemInputValues): Promise<void> {
     await mutation.mutateAsync(values);
-    await queryClient.invalidateQueries({ queryKey: ['items'] });
+    await queryClient.invalidateQueries({ queryKey: itemKeys.all });
     await navigate({ to: '/items', search: defaultItemListSearch });
   }
 

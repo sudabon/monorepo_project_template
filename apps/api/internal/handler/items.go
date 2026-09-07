@@ -1,10 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
-	"errors"
-	"io"
-	"mime"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -28,14 +24,22 @@ func (h *Items) CreateItem(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusCreated, toItem(item))
+	out, err := toItem(item)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusCreated, out)
 }
 func (h *Items) GetItem(c echo.Context, id generated.ItemId) error {
 	item, err := h.usecase.Get(c.Request().Context(), id.String())
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, toItem(item))
+	out, err := toItem(item)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, out)
 }
 func (h *Items) UpdateItem(c echo.Context, id generated.ItemId) error {
 	in, err := readInput(c)
@@ -46,7 +50,11 @@ func (h *Items) UpdateItem(c echo.Context, id generated.ItemId) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, toItem(item))
+	out, err := toItem(item)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, out)
 }
 func (h *Items) DeleteItem(c echo.Context, id generated.ItemId) error {
 	if err := h.usecase.Delete(c.Request().Context(), id.String()); err != nil {
@@ -71,74 +79,38 @@ func (h *Items) ListItems(c echo.Context, params generated.ListItemsParams) erro
 	}
 	items := make([]generated.Item, 0, len(page.Items))
 	for _, item := range page.Items {
-		items = append(items, toItem(item))
+		out, err := toItem(item)
+		if err != nil {
+			return err
+		}
+		items = append(items, out)
 	}
 	return c.JSON(http.StatusOK, generated.ItemPage{Items: items, Page: p.Page, PageSize: p.PageSize, Total: page.Total})
 }
 
-func toItem(item domain.Item) generated.Item {
-	return generated.Item{Id: uuid.MustParse(item.ID), Name: item.Name, Description: item.Description, CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt}
+func toItem(item domain.Item) (generated.Item, error) {
+	id, err := uuid.Parse(item.ID)
+	if err != nil {
+		return generated.Item{}, err
+	}
+	return generated.Item{Id: id, Name: item.Name, Description: item.Description, CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt}, nil
 }
 
 func readInput(c echo.Context) (domain.ItemInput, error) {
-	mediaType, _, err := mime.ParseMediaType(c.Request().Header.Get(echo.HeaderContentType))
-	if err != nil || mediaType != echo.MIMEApplicationJSON {
-		return domain.ItemInput{}, echo.NewHTTPError(http.StatusUnsupportedMediaType)
+	order := []string{"name", "description"}
+	values, typeErrs, err := decodeFields(c, order)
+	if err != nil {
+		return domain.ItemInput{}, err
 	}
-	decoder := json.NewDecoder(http.MaxBytesReader(c.Response(), c.Request().Body, 64*1024))
-	var raw map[string]json.RawMessage
-	if err := decoder.Decode(&raw); err != nil || raw == nil {
-		return domain.ItemInput{}, echo.NewHTTPError(http.StatusBadRequest)
+	in := domain.ItemInput{}
+	if v := values["name"]; v != nil {
+		in.Name = *v
 	}
-	if err := decoder.Decode(new(any)); !errors.Is(err, io.EOF) {
-		return domain.ItemInput{}, echo.NewHTTPError(http.StatusBadRequest)
+	if v := values["description"]; v != nil {
+		in.Description = *v
 	}
-	// Generated value types cannot distinguish JSON null from a missing field.
-	// Decode the supplied fields explicitly so all type/length errors are returned.
-	var input generated.ItemInput
-	var fields domain.ValidationErrors
-	for _, field := range []string{"name", "description"} {
-		data, exists := raw[field]
-		if !exists {
-			continue
-		}
-		var value *string
-		if err := json.Unmarshal(data, &value); err != nil || value == nil {
-			fields = append(fields, domain.FieldError{Field: field, Message: "Must be a string."})
-			continue
-		}
-		if field == "name" {
-			input.Name = *value
-		} else {
-			input.Description = value
-		}
-	}
-	in := domain.ItemInput{Name: input.Name}
-	if input.Description != nil {
-		in.Description = *input.Description
-	}
-	// Merge business constraints with type errors, preserving contract field order.
-	for _, validation := range in.Validate() {
-		duplicate := false
-		for _, field := range fields {
-			if field.Field == validation.Field {
-				duplicate = true
-			}
-		}
-		if !duplicate {
-			fields = append(fields, validation)
-		}
-	}
-	if len(fields) > 0 {
-		ordered := make(domain.ValidationErrors, 0, len(fields))
-		for _, name := range []string{"name", "description"} {
-			for _, field := range fields {
-				if field.Field == name {
-					ordered = append(ordered, field)
-				}
-			}
-		}
-		return domain.ItemInput{}, ordered
+	if fields := mergeFieldErrors(order, typeErrs, in.Validate()); len(fields) > 0 {
+		return domain.ItemInput{}, fields
 	}
 	return in, nil
 }

@@ -5,8 +5,10 @@ Go のファイルは開かない。
 
 - `src/generated/` は `api/openapi.yaml` からの生成物。**手編集しない。** 型を変えたい
   ときは契約を直して `make gen` する。Biome の対象外にしてある。
-- 公開するのは package entry からの `createItemQueries` / `createItemMutations` と
-  `ApiError` だけ。アプリケーションに生成物を直接 import させない。
+- 公開するのは package entry からの `createItemQueries` / `createItemMutations`、
+  `itemKeys`、`constraints`、`ApiError`。アプリケーションに生成物を直接 import させない。
+- キャッシュ無効化に使うキーの公開はラッパの責務である。`queryOptions` の `queryKey` も
+  そのキーから組み立てる。キー形状を変えたとき SPA の型検査で検出できるようにする。
 - ラッパは薄く保つ。TanStack Query の `queryOptions` / `mutationOptions` を返すに留め、
   再試行・エラー表示・キャッシュ無効化の方針を持たない。それはアプリ側の QueryClient が決める。
 - HTTP エラーは `ApiError` に status と契約の body を載せて送出する。通信エラーは

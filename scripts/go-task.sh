@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-task="${1:?usage: go-task.sh <setup|gen|fmt|fmt-check|lint|test|test-unit|build|run-api|run-bff|migrate-up|migrate-down|migrate-bff-up|migrate-bff-down>}"
+task="${1:?usage: go-task.sh <setup|gen|gen-constraints-ts|fmt|fmt-check|lint|test|test-unit|build|run-api|run-bff|migrate-up|migrate-down|migrate-bff-up|migrate-bff-down>}"
 expected=$(awk '$1 == "go" { print $2 }' go.work)
 toolchain=$expected
 case $expected in
@@ -33,8 +33,17 @@ esac
 # Generation runs before the module loop: only apps/api holds the contract tool,
 # and routing it here keeps GOTOOLCHAIN derived in exactly one place.
 if [ "$task" = gen ]; then
-  exec go -C apps/api tool oapi-codegen \
+  go -C apps/api tool oapi-codegen \
     -config ../../api/oapi-codegen.yaml ../../api/openapi.yaml
+  go -C apps/api tool genconstraints \
+    -spec ../../api/openapi.yaml \
+    -go internal/domain/constraints.gen.go
+  exit 0
+fi
+if [ "$task" = gen-constraints-ts ]; then
+  exec go -C apps/api tool genconstraints \
+    -spec ../../api/openapi.yaml \
+    -ts ../../packages/api-client/src/generated/constraints.ts
 fi
 
 gofmt_bin="$(go env GOROOT)/bin/gofmt"

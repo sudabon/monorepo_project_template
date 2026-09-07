@@ -8,13 +8,14 @@ excludeFiles:
 vendors:
   # Shared runtime plumbing lives in its own module; see docs/adr/0006.
   platform: {in: github.com/sudabon/monorepo_project_template/packages/go-platform/**}
+  echo: {in: github.com/labstack/echo/**}
+  goose: {in: github.com/pressly/goose/**}
 components:
   session: {in: internal/session/**}
   identity: {in: internal/identity/**}
   handler: {in: internal/handler/**}
   proxy: {in: internal/proxy/**}
   migrations: {in: migrations/**}
-  testdb: {in: internal/testdb/**}
   main: {in: cmd/**}
 deps:
   session:
@@ -23,16 +24,13 @@ deps:
     mayDependOn: [identity]
   handler:
     mayDependOn: [session, identity, proxy]
-    anyVendorDeps: true
+    canUse: [platform, echo]
   # The proxy stays narrow: the session, the shared logger, and nothing else.
   proxy:
     mayDependOn: [session]
     canUse: [platform]
   migrations:
-    anyVendorDeps: true
-  testdb:
-    mayDependOn: [migrations]
-    anyVendorDeps: true
+    canUse: [goose]
   main:
     mayDependOn: [handler, identity, session, migrations]
-    anyVendorDeps: true
+    canUse: [platform]

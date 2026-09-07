@@ -38,7 +38,7 @@
 | pgx | 5.10.0 | `database/sql` ドライバとして SQL を直接書く。ORM を持ち込まない | DSN の解釈、`stdlib` の接続プール設定、型変換の変更 |
 | goose | 3.28.0 | 単一の SQL に Up / Down を書き、Provider API を統合テストでも使う | Provider API のシグネチャ、version テーブルの構成、埋め込み FS の扱い |
 | go-arch-lint | 1.18.0 | 層の依存許可グラフを宣言で書き、`make lint-go` で検査 | 設定 version、component 記法、`deepScan` の判定 |
-| google/uuid | 1.6.0 | リクエスト ID の生成と生成型の UUID 変換 | 生成方式と文字列表現 |
+| google/uuid | 1.6.0 | 生成型（`openapi_types.UUID`）との変換のみ。リクエスト ID の生成は標準ライブラリ `uuid` | 生成型との型互換 |
 
 配布元: [Go](https://go.dev/dl/)、[Node.js](https://nodejs.org/dist/index.json)、[pnpm](https://registry.npmjs.org/pnpm/latest)、[Biome](https://registry.npmjs.org/@biomejs/biome/latest)。
 

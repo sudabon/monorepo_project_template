@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/sudabon/monorepo_project_template/apps/api/internal/testdb"
 	"github.com/sudabon/monorepo_project_template/apps/api/migrations"
+	"github.com/sudabon/monorepo_project_template/packages/go-platform/testdb"
 )
 
 func TestRollbackAndReapply(t *testing.T) {
-	db := testdb.Open(t)
+	db := testdb.Open(t, migrations.NewProvider)
 	p, err := migrations.NewProvider(db)
 	if err != nil {
 		t.Fatal(err)

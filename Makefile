@@ -7,7 +7,7 @@ PNPM ?= pnpm
 BASE ?= origin/main
 DATABASE_URL ?= postgres://template:template@localhost:55432/template?sslmode=disable
 export DATABASE_URL
-GENERATED_GO_PATHS := apps/api/internal/generated
+GENERATED_GO_PATHS := apps/api/internal/generated apps/api/internal/domain/constraints.gen.go
 GENERATED_WEB_PATHS := packages/api-client/src/generated
 GENERATED_PATHS := $(GENERATED_GO_PATHS) $(GENERATED_WEB_PATHS)
 # renovate: datasource=npm depName=renovate
@@ -79,6 +79,7 @@ gen-go:
 
 gen-web:
 	$(PNPM) exec openapi-typescript api/openapi.yaml --default-non-nullable false -o packages/api-client/src/generated/schema.d.ts
+	bash scripts/go-task.sh gen-constraints-ts
 
 gen-check: gen
 gen-check-go: GENERATED_PATHS := $(GENERATED_GO_PATHS)

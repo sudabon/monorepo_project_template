@@ -3,7 +3,8 @@ package domain
 import (
 	"context"
 	"errors"
-	"strings"
+	"fmt"
+	"regexp"
 	"time"
 	"unicode/utf8"
 )
@@ -24,16 +25,21 @@ type ValidationErrors []FieldError
 
 func (e ValidationErrors) Error() string { return "some fields are invalid" }
 
+var (
+	itemInputNamePattern        = regexp.MustCompile(ItemInputNamePattern)
+	itemInputDescriptionPattern = regexp.MustCompile(ItemInputDescriptionPattern)
+)
+
 func (in ItemInput) Validate() ValidationErrors {
 	var fields ValidationErrors
-	if n := utf8.RuneCountInString(in.Name); n < 1 || n > 100 {
-		fields = append(fields, FieldError{"name", "Name must contain 1 to 100 characters."})
-	} else if strings.ContainsRune(in.Name, '\x00') {
+	if n := utf8.RuneCountInString(in.Name); n < ItemInputNameMinLength || n > ItemInputNameMaxLength {
+		fields = append(fields, FieldError{"name", fmt.Sprintf("Name must contain %d to %d characters.", ItemInputNameMinLength, ItemInputNameMaxLength)})
+	} else if !itemInputNamePattern.MatchString(in.Name) {
 		fields = append(fields, FieldError{"name", "Must not contain the NUL character (U+0000)."})
 	}
-	if utf8.RuneCountInString(in.Description) > 2000 {
-		fields = append(fields, FieldError{"description", "Description must be at most 2000 characters."})
-	} else if strings.ContainsRune(in.Description, '\x00') {
+	if utf8.RuneCountInString(in.Description) > ItemInputDescriptionMaxLength {
+		fields = append(fields, FieldError{"description", fmt.Sprintf("Description must be at most %d characters.", ItemInputDescriptionMaxLength)})
+	} else if !itemInputDescriptionPattern.MatchString(in.Description) {
 		fields = append(fields, FieldError{"description", "Must not contain the NUL character (U+0000)."})
 	}
 	return fields

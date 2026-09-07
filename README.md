@@ -80,4 +80,4 @@ test ! -f monorepo-project-template-instructions.md && echo OK
 | 設計判断 | [docs/adr/](docs/adr/README.md) |
 | Coding Agent 向け指示 | [AGENTS.md](AGENTS.md) |
 
-GitHub の Settings → General → Template repository を有効にできる。`.env` や秘密鍵は `.gitignore` 済みで、workflow も `secrets.*` を参照していない。
+GitHub の Template repository を有効にしてある。`.env` や秘密鍵は `.gitignore` 済みで、workflow も `secrets.*` を参照していない。
